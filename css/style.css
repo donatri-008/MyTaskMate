@@ -61,6 +61,23 @@ body {
     gap: 0.5rem;
 }
 
+/* Style untuk input username */
+#register-username {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Style untuk tampilan username */
+#username {
+    font-weight: 600;
+    color: #48466d;
+    margin-right: 15px;
+}
+
 /* Main App */
 #app-container {
     max-width: 1200px;
