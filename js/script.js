@@ -444,82 +444,95 @@ function getDragAfterElement(container, y) {
 }
 
 /* ==================================================
-                EDIT MODAL FUNCTIONS
+                EDIT MODAL FUNCTIONS (FIXED)
    ================================================== */
 function setupEditModal() {
     const modal = document.getElementById('editModal');
     const closeBtns = document.querySelectorAll('.close-btn, .cancel-btn');
     const saveBtn = document.getElementById('saveEdit');
-    let currentEditId = null; // Gunakan ID dokumen Firestore
+    let currentEditId = null;
 
-    // Buka modal dengan mengambil data langsung dari Firestore
+    // 1. Fix CSS Classes
+    modal.classList.add('hidden'); // Initialize modal as hidden
+
+    // 2. Enhanced openModal function
     window.openEditModal = async (todoId) => {
         try {
-            console.log("Membuka modal untuk ID:", todoId); // Debugging
+            console.log("Opening edit modal for:", todoId);
+            currentEditId = todoId;
+            
             const todoDoc = await db.collection('users').doc(currentUser.uid)
                 .collection('todos').doc(todoId).get();
-            
+
             if (!todoDoc.exists) {
-                alert("Dokumen tidak ditemukan!");
+                alert('Tugas tidak ditemukan!');
                 return;
             }
 
             const todo = todoDoc.data();
+            
+            // 3. Convert Firestore Timestamp to Date input
+            const deadlineDate = todo.deadline ? 
+                new Date(todo.deadline.toDate()).toISOString().split('T')[0] : '';
+            
             document.getElementById('editText').value = todo.text;
-            document.getElementById('editDate').value = todo.deadline || '';
+            document.getElementById('editDate').value = deadlineDate;
             document.getElementById('editCategory').value = todo.category || 'general';
             
-            // Tampilkan modal dengan class CSS
+            // 4. Toggle modal visibility
             modal.classList.remove('hidden');
-            modal.classList.add('visible');
+            modal.style.display = 'flex';
         } catch (error) {
+            console.error("Error opening modal:", error);
             alert(`Error: ${error.message}`);
         }
     };
 
-    // Tutup modal
+    // 5. Enhanced close function
     const closeModal = () => {
-        modal.classList.remove('visible');
         modal.classList.add('hidden');
+        modal.style.display = 'none';
         currentEditId = null;
     };
 
-    // Event listeners
-    closeBtns.forEach(btn => btn.addEventListener('click', closeModal));
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) closeModal();
-    });
-
-    // Handle save
+    // 6. Save handler with proper date conversion
     saveBtn.addEventListener('click', async () => {
         if (!currentEditId) return;
 
         const newText = document.getElementById('editText').value.trim();
         const newDeadline = document.getElementById('editDate').value;
-        const deadlineDate = newDeadline ? new Date(newDeadline) : null;
         const category = document.getElementById('editCategory').value;
 
         if (!newText) {
             alert('Nama tugas tidak boleh kosong!');
-            document.getElementById('editText').focus();
             return;
         }
 
         try {
+            // 7. Convert to Firestore Timestamp
+            const deadlineTimestamp = newDeadline ? 
+                firebase.firestore.Timestamp.fromDate(new Date(newDeadline)) : null;
+            
             await db.collection('users').doc(currentUser.uid)
                 .collection('todos')
                 .doc(currentEditId)
                 .update({
                     text: newText,
-                    deadline: deadlineDate,
+                    deadline: deadlineTimestamp,
                     category: category,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp() // Tambah field update
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
             closeModal();
+            // 8. Force refresh data
+            initTodoSystem(); 
         } catch (error) {
-            console.error('Error updating document:', error);
-            alert(`Gagal menyimpan perubahan: ${error.message}`);
+            console.error('Update error:', error);
+            alert(`Gagal update: ${error.message}`);
         }
     });
+
+    // Event listeners
+    closeBtns.forEach(btn => btn.addEventListener('click', closeModal));
+    window.addEventListener('click', (e) => e.target === modal && closeModal());
 }
