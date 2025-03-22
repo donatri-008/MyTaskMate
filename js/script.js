@@ -33,19 +33,7 @@ const categories = {
     study: { name: 'Belajar', color: '#9ec0e3' }
 };
 
-/* ==================================================
-                INISIALISASI APLIKASI
-   ================================================== */
-document.addEventListener('DOMContentLoaded', () => {
-    initAuth();
-    initDOMElements();
-    initEventListeners();
-});
-
-/* ==================================================
-                FUNGSI INISIALISASI
-   ================================================== */
-function initAuth() {
+// Auth State Listener
 auth.onAuthStateChanged(async (user) => {
     currentUser = user;
     
@@ -130,37 +118,6 @@ document.getElementById('google-login').addEventListener('click', async () => {
 document.getElementById('logout-btn').addEventListener('click', () => {
     auth.signOut();
 });
-
-
-function initDOMElements() {
-    setupEditModal();
-    setupDragAndDrop();
-}
-
-function initEventListeners() {
-    const addBtn = document.getElementById('addBtn');
-    const todoInput = document.getElementById('todoInput');
-    const sortSelect = document.getElementById('sortSelect');
-    const logoutBtn = document.getElementById('logout-btn');
-
-    if (addBtn) {
-        addBtn.addEventListener('click', addTodo);
-    }
-
-    if (todoInput) {
-        todoInput.addEventListener('keypress', e => {
-            if (e.key === 'Enter') addTodo();
-        });
-    }
-
-    if (sortSelect) {
-        sortSelect.addEventListener('change', () => renderTodos());
-    }
-
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => auth.signOut());
-    }
-}
 
 /* ==================================================
                 SISTEM TODO DENGAN FIREBASE
