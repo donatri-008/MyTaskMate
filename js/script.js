@@ -96,8 +96,8 @@ document.getElementById('register-form')?.addEventListener('submit', async (e) =
     e.preventDefault();
     // PASTIKAN ID BENAR!
     const username = document.getElementById('register-username').value.trim();
-    const email = document.getElementById('register-email').value; // <-- ini yg benar
-    const password = document.getElementById('register-password').value; // <-- ini yg benar
+    const email = document.getElementById('register-email').value; 
+    const password = document.getElementById('register-password').value; 
 
     try {
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
@@ -277,8 +277,8 @@ function createTodoElement(todo, index) {
         </div>
         <div class="actions">
             <button class="editBtn">✏️</button>
-            <button class="completeBtn">${todo.completed ? 'Batalkan' : 'Selesai'}</button>
-            <button class="deleteBtn">🗑️ Delete</button>
+            <button class="completeBtn">${todo.completed ? '❌' : '✅'}</button>
+            <button class="deleteBtn">🗑️</button>
         </div>
     `;
 
