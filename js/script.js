@@ -450,7 +450,7 @@ function setupEditModal() {
     const modal = document.getElementById('editModal');
     const closeBtns = document.querySelectorAll('.close-btn, .cancel-btn');
     const saveBtn = document.getElementById('saveEdit');
-    let currentEditId = null;
+    let currentEditId = todoId;
 
     // 1. Fix CSS Classes
     modal.classList.add('hidden'); // Initialize modal as hidden
