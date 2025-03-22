@@ -181,43 +181,47 @@ body {
 }
 
 header {
-    position: relative;
-    padding: 1.5rem 0;
-    margin-bottom: 2rem;
+    padding: 1.5rem 2rem;
+    background: #f8fafc;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.header-content {
-    max-width: 800px;
+.header-wrapper {
+    max-width: 1200px;
     margin: 0 auto;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    position: relative;
 }
 
-.title-center {
-    text-align: center;
+h1 {
     margin: 0;
-    font-size: 2.5rem;
-    color: #2d3748;
+    font-size: 2rem;
+    color: #1e293b;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 #user-info {
-    position: absolute;
-    right: -1rem;
-    top: 50%;
-    transform: translateY(-50%);
     display: flex;
-    gap: 1rem;
+    align-items: center;
+    gap: 1.5rem;
+    margin-left: auto;
 }
 
 #logout-btn {
-    background: #ff6b6b;
-    color: white;
-    border: none;
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
     padding: 0.5rem 1rem;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
+    transition: all 0.2s;
+}
+
+#logout-btn:hover {
+    background: #dbeafe;
 }
 
 .app-container {
