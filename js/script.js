@@ -12,72 +12,9 @@ const firebaseConfig = {
 };
 
 // Inisialisasi Firebase
-firebase.initializeApp(firebaseConfig);
+const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-
-// Handle Register Link
-document.getElementById('show-register').addEventListener('click', (e) => {
-  e.preventDefault();
-  document.getElementById('login-page').classList.remove('active');
-  document.getElementById('register-page').classList.add('active');
-});
-
-// Handle Login Link
-document.getElementById('show-login').addEventListener('click', (e) => {
-  e.preventDefault();
-  document.getElementById('register-page').classList.remove('active');
-  document.getElementById('login-page').classList.add('active');
-});
-
-// Handle Google Login
-document.getElementById('google-login').addEventListener('click', async () => {
-    try {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        const result = await auth.signInWithPopup(provider);
-        
-        // Cek apakah user baru
-        if (result.additionalUserInfo.isNewUser) {
-            // Simpan info dari Google
-            await db.collection('users').doc(result.user.uid).set({
-                username: result.user.displayName || result.user.email.split('@')[0],
-                email: result.user.email,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        }
-        
-        window.location.href = 'index.html';
-    } catch (error) {
-        alert(`Google Login Gagal: ${error.message}`);
-    }
-});
-
-  // Handle Registrasi
-  document.getElementById('register-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const username = document.getElementById('register-username').value.trim();
-      const email = document.getElementById('register-email').value;
-      const password = document.getElementById('register-password').value;
-  
-      try {
-          // 1. Buat user di Firebase Auth
-          const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
-          
-          // 2. Simpan username ke Firestore
-          await db.collection('users').doc(userCredential.user.uid).set({
-              username: username,
-              email: email,
-              createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-  
-          // 3. Redirect ke halaman utama
-          window.location.href = 'index.html';
-          
-      } catch (error) {
-          alert(`Registrasi Gagal: ${error.message}`);
-      }
-  });
 
 /* ==================================================
                 VARIABEL GLOBAL
@@ -107,24 +44,108 @@ document.addEventListener('DOMContentLoaded', () => {
                 FUNGSI INISIALISASI
    ================================================== */
 function initAuth() {
-  auth.onAuthStateChanged(async (user) => {
-      if (user) {
-          // Ambil data dari Firestore
-          const userDoc = await db.collection('users').doc(user.uid).get();
-          const userData = userDoc.data();
-          
-          // Tampilkan username
-          const usernameElement = document.getElementById('username');
-          if (userData && userData.username) {
-              usernameElement.textContent = `Hi, ${userData.username}`;
-          } else {
-              // Fallback ke email jika username tidak ada
-              usernameElement.textContent = `Hi, ${user.email.split('@')[0]}`;
-          }
-      } else {
-          window.location.href = 'index.html';
-      }
-  });
+    auth.onAuthStateChanged(async (user) => {
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
+        
+        if (user) {
+            currentUser = user;
+            authContainer.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+            initUserInterface(user);
+            initTodoSystem();
+        } else {
+            authContainer.classList.remove('hidden');
+            appContainer.classList.add('hidden');
+        }
+    });
+}
+
+function initUserInterface(user) {
+    const usernameElement = document.getElementById('username');
+    db.collection('users').doc(user.uid).get().then(doc => {
+        const userData = doc.data();
+        usernameElement.textContent = `Hi, ${userData?.username || user.email.split('@')[0]}`;
+    });
+}
+
+function setupEventListeners() {
+    // Auth Listeners
+    document.getElementById('show-register').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('login-page').classList.remove('active');
+        document.getElementById('register-page').classList.add('active');
+    });
+
+    document.getElementById('show-login').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('register-page').classList.remove('active');
+        document.getElementById('login-page').classList.add('active');
+    });
+
+    document.getElementById('google-login').addEventListener('click', handleGoogleLogin);
+    document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+
+    // Todo Listeners
+    document.getElementById('addBtn').addEventListener('click', addTodo);
+    document.getElementById('todoInput').addEventListener('keypress', e => {
+        if (e.key === 'Enter') addTodo();
+    });
+
+    // Form Submissions
+    document.getElementById('login-form').addEventListener('submit', e => {
+        e.preventDefault();
+        handleLogin(
+            document.getElementById('login-email').value,
+            document.getElementById('login-password').value
+        );
+    });
+
+    document.getElementById('register-form').addEventListener('submit', e => {
+        e.preventDefault();
+        handleRegister(
+            document.getElementById('register-username').value,
+            document.getElementById('register-email').value,
+            document.getElementById('register-password').value
+        );
+    });
+}
+
+async function handleLogin(email, password) {
+    try {
+        await auth.signInWithEmailAndPassword(email, password);
+    } catch (error) {
+        alert(`Login failed: ${error.message}`);
+    }
+}
+
+async function handleRegister(username, email, password) {
+    try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        await db.collection('users').doc(userCredential.user.uid).set({
+            username,
+            email,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch (error) {
+        alert(`Registration failed: ${error.message}`);
+    }
+}
+
+async function handleGoogleLogin() {
+    try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await auth.signInWithPopup(provider);
+        if (result.additionalUserInfo.isNewUser) {
+            await db.collection('users').doc(result.user.uid).set({
+                username: result.user.displayName || result.user.email.split('@')[0],
+                email: result.user.email,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+    } catch (error) {
+        alert(`Google login failed: ${error.message}`);
+    }
 }
 
 function initDOMElements() {
