@@ -10,6 +10,8 @@
     --secondary-color: #aa96da;
     --accent-color: #fcbad3;
     --dark-color: #48466d;
+    --text-color: #374151;
+    --light-bg: #F9FAFB;
 }
 
 body {
@@ -24,58 +26,142 @@ body {
 
 /* Auth Pages */
 #auth-container {
-    max-width: 400px;
-    margin: 2rem auto;
-    padding: 2rem;
+    width: 100%;
+    max-width: 440px;
+    margin: 2rem;
+    padding: 2.5rem;
     background: white;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border-radius: 1.5rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease;
 }
 
-.auth-page {
-    display: none;
-    flex-direction: column;
-    gap: 1.5rem;
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
 }
 
-.auth-page.active {
-    display: flex;
-}
-
-#show-register, #show-login {
-  color: #4285f4;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-#google-login {
-    background: #4285f4;
-    color: white;
-    border: none;
-    padding: 0.8rem;
-    border-radius: 8px;
-    cursor: pointer;
+.auth-header h1 {
+    font-size: 2rem;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
 }
 
-/* Style untuk input username */
-#register-username {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box;
+.auth-header p {
+    color: var(--text-color);
+    font-size: 0.9rem;
 }
 
-/* Style untuk tampilan username */
-#username {
+.input-group {
+    position: relative;
+    margin-bottom: 1.2rem;
+}
+
+.input-group i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-color);
+    opacity: 0.6;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 0.9rem 1rem 0.9rem 2.5rem;
+    border: 2px solid #E5E7EB;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    outline: none;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
     font-weight: 600;
-    color: #48466d;
-    margin-right: 15px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0;
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.auth-divider span {
+    padding: 0 1rem;
+    font-size: 0.9rem;
+}
+
+.btn-google {
+    width: 100%;
+    padding: 0.9rem;
+    background: var(--light-bg);
+    border: 2px solid #E5E7EB;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-google:hover {
+    background: #F3F4F6;
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: var(--text-color);
+}
+
+.auth-switch a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.auth-switch a:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+}
+
+.emoji {
+    font-size: 1.2em;
+    margin-left: 0.3rem;
 }
 
 /* Main App */
