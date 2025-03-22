@@ -139,20 +139,24 @@ document.getElementById('logout-btn').addEventListener('click', () => {
 function initTodoSystem() {
     const todosRef = db.collection('users').doc(currentUser.uid).collection('todos');
     
-    // Tambahkan error handling
     todosRef.orderBy('createdAt', 'desc').onSnapshot(
         (snapshot) => {
-            todos = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                // Konversi timestamp ke Date
-                createdAt: doc.data().createdAt?.toDate(),
-                deadline: doc.data().deadline?.toDate()
-            }));
+            todos = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    text: data.text,
+                    completed: data.completed || false,
+                    deadline: data.deadline?.toDate() || null, // Konversi ke Date
+                    createdAt: data.createdAt?.toDate() || new Date(),
+                    category: data.category || 'general'
+                };
+            });
+            console.log("Data diterima:", todos); // Debugging
             renderTodos();
         },
         (error) => {
-            console.error("Error getting todos:", error);
+            console.error("Error:", error); 
             alert('Gagal memuat tugas!');
         }
     );
@@ -208,23 +212,23 @@ function renderTodos() {
     const pendingList = document.getElementById('pendingList');
     const completedList = document.getElementById('completedList');
     
-    // Kosongkan dengan benar
-    pendingList.innerHTML = '<div class="empty-state">📭 Tidak ada tugas</div>';
-    completedList.innerHTML = '<div class="empty-state">🎉 Semua selesai!</div>';
+    // Kosongkan dengan aman
+    pendingList.innerHTML = '';
+    completedList.innerHTML = '';
 
-    // Debugging
-    console.log("Total tugas:", todos.length);
-    console.log("Data tugas:", todos);
+    // Tambahkan placeholder jika kosong
+    if (todos.filter(todo => !todo.completed).length === 0) {
+        pendingList.innerHTML = '<div class="empty-state">🎉 Tidak ada tugas!</div>';
+    }
+    
+    if (todos.filter(todo => todo.completed).length === 0) {
+        completedList.innerHTML = '<div class="empty-state">📭 Belum ada yang selesai</div>';
+    }
 
-    getSortedTodos().forEach((todo, index) => {
+    // Render todos
+    todos.forEach((todo, index) => {
         const todoElement = createTodoElement(todo, index);
-        if (todo.completed) {
-            completedList.appendChild(todoElement);
-            completedList.querySelector('.empty-state')?.remove();
-        } else {
-            pendingList.appendChild(todoElement);
-            pendingList.querySelector('.empty-state')?.remove();
-        }
+        todo.completed ? completedList.appendChild(todoElement) : pendingList.appendChild(todoElement);
     });
 }
 
