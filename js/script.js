@@ -132,10 +132,6 @@ document.getElementById('logout-btn').addEventListener('click', () => {
     auth.signOut();
 });
 
-document.getElementById('todoForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    addTodo();
-});
 
 /* ==================================================
                 SISTEM TODO DENGAN FIREBASE
@@ -149,20 +145,40 @@ function initTodoSystem() {
             ...doc.data()
         }));
         renderTodos();
+        setupDragAndDrop();
+    });
+
+    // Add Task Event Listener
+    document.getElementById('addBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        addTodo();
+    });
+
+    // Enter Key Listener
+    document.getElementById('todoInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addTodo();
+        }
     });
 }
 
 async function addTodo() {
-    const text = document.getElementById('todoInput').value.trim();
-    const deadline = document.getElementById('todoDate').value;
+    const textInput = document.getElementById('todoInput');
+    const dateInput = document.getElementById('todoDate');
     
+    const text = textInput.value.trim();
+    const deadline = dateInput.value;
+
     if (!text) {
         alert('Silahkan isi nama task!');
+        textInput.focus();
         return;
     }
-    
+
     if (deadline && !validateDate(deadline)) {
         alert('Deadline tidak boleh di masa lalu!');
+        dateInput.focus();
         return;
     }
 
@@ -175,8 +191,9 @@ async function addTodo() {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
-        document.getElementById('todoInput').value = '';
-        document.getElementById('todoDate').value = '';
+        textInput.value = '';
+        dateInput.value = '';
+        textInput.focus();
     } catch (error) {
         alert(`Error: ${error.message}`);
     }
