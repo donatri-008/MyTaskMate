@@ -30,18 +30,7 @@ document.getElementById('show-login').addEventListener('click', (e) => {
   document.getElementById('login-page').classList.add('active');
 });
 
-  // Handle Google Login
-document.getElementById('google-login').addEventListener('click', async () => {
-  try {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    await auth.signInWithPopup(provider);
-    window.location.href = 'app.html';
-  } catch (error) {
-    console.error('Google Login Error:', error);
-    alert(`Login Gagal: ${error.message}`);
-  }
-});
-
+// Handle Google Login
 document.getElementById('google-login').addEventListener('click', async () => {
     try {
         const provider = new firebase.auth.GoogleAuthProvider();
