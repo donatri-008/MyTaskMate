@@ -132,6 +132,11 @@ document.getElementById('logout-btn').addEventListener('click', () => {
     auth.signOut();
 });
 
+document.getElementById('todoForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    addTodo();
+});
+
 /* ==================================================
                 SISTEM TODO DENGAN FIREBASE
    ================================================== */
