@@ -56,14 +56,6 @@ body {
     font-size: 0.9rem;
 }
 
-.auth-page {
-    display: none;
-}
-
-.auth-page.active {
-    display: flex;
-}
-
 .input-group {
     position: relative;
     margin-bottom: 1.2rem;
