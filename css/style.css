@@ -164,6 +164,16 @@ body {
     margin-left: 0.3rem;
 }
 
+.auth-page {
+    display: none !important;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.auth-page.active {
+    display: flex !important;
+}
+
 /* Main App */
 #app-container {
     max-width: 1200px;
