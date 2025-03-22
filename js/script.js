@@ -444,72 +444,97 @@ function getDragAfterElement(container, y) {
 }
 
 /* ==================================================
-                EDIT MODAL FUNCTIONS (FIXED)
+                EDIT MODAL FUNCTIONS
    ================================================== */
 function setupEditModal() {
-    const db = firebase.firestore();
     const modal = document.getElementById('editModal');
     const closeBtns = document.querySelectorAll('.close-btn, .cancel-btn');
     const saveBtn = document.getElementById('saveEdit');
-    let currentEditId = null;
+    let currentEditId = null; // Gunakan ID dokumen Firestore
 
-    window.openEditModal = function (todoId) {
-        currentEditId = todoId;
-    
-        if (todo) {
-            document.getElementById("editText").value = todo.querySelector(".todo-text").innerText;
-            document.getElementById("editCategory").value = todo.getAttribute("data-category");
-            document.getElementById("editDeadline").value = todo.getAttribute("data-deadline");
+    // Buka modal dengan mengambil data langsung dari Firestore
+    window.openEditModal = async (todoId) => {
+      currentEditId = todoId;
+      
+        try {
+            console.log("Membuka modal untuk ID:", todoId); // Debugging
+            const todoDoc = await db.collection('users').doc(currentUser.uid)
+                .collection('todos').doc(todoId).get();
+            
+            if (!todoDoc.exists) {
+                alert("Dokumen tidak ditemukan!");
+                return;
+            }
+
+            const todo = todoDoc.data();
+            document.getElementById('editText').value = todo.text;
+            document.getElementById('editDate').value = todo.deadline || '';
+            document.getElementById('editCategory').value = todo.category || 'general';
+            
+            // Tampilkan modal dengan class CSS
+            modal.classList.remove('hidden');
+            modal.classList.add('visible');
+        } catch (error) {
+            alert(Error: ${error.message});
         }
-    
-        document.getElementById("editModal").style.display = "block";
     };
-    
-    // Fungsi untuk menyimpan perubahan pada tugas yang diedit
-    document.getElementById("saveEdit").addEventListener("click", async function () {
-        const newText = document.getElementById("editText").value;
-        const category = document.getElementById("editCategory").value;
-        const deadline = document.getElementById("editDeadline").value;
-        const deadlineDate = deadline ? new Date(deadline) : null;
-    
-        if (!currentEditId) {
-            alert("Tidak ada tugas yang dipilih untuk diedit.");
+
+    // Tutup modal
+    const closeModal = () => {
+        modal.classList.remove('visible');
+        modal.classList.add('hidden');
+        currentEditId = null;
+    };
+
+    // Event listeners
+    closeBtns.forEach(btn => btn.addEventListener('click', closeModal));
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    // Handle save
+    saveBtn.addEventListener('click', async () => {
+        if (!currentEditId) return;
+
+        const newText = document.getElementById('editText').value.trim();
+        const newDeadline = document.getElementById('editDate').value;
+        const deadlineDate = newDeadline ? new Date(newDeadline) : null;
+        const category = document.getElementById('editCategory').value;
+
+        if (!newText) {
+            alert('Nama tugas tidak boleh kosong!');
+            document.getElementById('editText').focus();
             return;
         }
-    
+
         try {
             await db.collection('users').doc(currentUser.uid)
                 .collection('todos').doc(currentEditId).update({
                     text: newText,
-                    category: category,
-                    deadline: deadlineDate ? deadlineDate.toISOString() : null
+                    deadline: deadlineDate ? deadlineDate.toISOString() : null,
+                    category: category
                 });
-    
-            alert("Perubahan berhasil disimpan!");
+        
+            alert('Perubahan berhasil disimpan!');
             closeModal();
         } catch (error) {
             alert(`Error saat menyimpan: ${error.message}`);
         }
     });
-    
-    // Fungsi untuk menghapus tugas
-    window.deleteTodo = async function (todoId) {
-        console.log("Menghapus ID:", todoId); // Debugging
-    
-        if (!confirm("Yakin ingin menghapus tugas ini?")) return;
-    
-        try {
-            await db.collection('users').doc(currentUser.uid)
-                .collection('todos').doc(todoId).delete();
-    
-            alert("Tugas berhasil dihapus!");
-        } catch (error) {
-            alert(`Gagal menghapus: ${error.message}`);
-        }
-    };
-    
-    // Fungsi untuk menutup modal edit
-    function closeModal() {
-        document.getElementById("editModal").style.display = "none";
-        currentEditId = null;
-    }
+    async function deleteTodo(todoId) {
+      console.log("Menghapus ID:", todoId); // Debugging
+      if (!confirm("Yakin ingin menghapus tugas ini?")) return;
+      try {
+          await db.collection('users').doc(currentUser.uid)
+              .collection('todos').doc(todoId).delete();
+          console.log("Berhasil dihapus");
+      } catch (error) {
+          alert(`Gagal menghapus: ${error.message}`);
+      }
+  }
+  // Fungsi untuk menutup modal edit
+  function closeModal() {
+      document.getElementById("editModal").style.display = "none";
+      currentEditId = null;
+  }
+}
