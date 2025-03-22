@@ -11,7 +11,10 @@
 <body>
     <div id="auth-container">
         <div id="login-page" class="auth-page active">
-            <h1>Login ✨</h1>
+            <div class="auth-header">
+                <h1>Login <span class="emoji">🔑</span></h1>
+                <p>Welcome! Please enter your details</p>
+            </div>
             <form id="login-form">
                 <div class="input-group">
                     <i class="fas fa-envelope"></i>
@@ -21,14 +24,23 @@
                     <i class="fas fa-lock"></i>
                     <input type="password" id="login-password" placeholder="Password" required>
                 </div>
-                <button type="submit">Login</button>
+                <button type="submit" class="btn-primary">Login →</button>
             </form>
-            <button id="google-login">Continue with Google</button>
-            <p>Don't have account? <a href="#register-page" id="show-register">Register here</a></p>
+            <div class="auth-divider">
+                <span>or continue with</span>
+            </div>
+            <button id="google-login" class="btn-google">
+                <img src="https://img.icons8.com/color/24/000000/google-logo.png" alt="Google"/>
+                Continue with Google
+            </button>
+            <p class="auth-switch">Don't have account? <a href="#register-page" id="show-register">Register here</a></p>
         </div>
-
+    
         <div id="register-page" class="auth-page">
-            <h1>Daftar Akun 🌟</h1>
+            <div class="auth-header">
+                <h1>Daftar Akun <span class="emoji">🚀</span></h1>
+                <p>Create new account to get started</p>
+            </div>
             <form id="register-form">
                 <div class="input-group">
                     <i class="fas fa-user"></i>
@@ -36,15 +48,15 @@
                 </div>
                 <div class="input-group">
                     <i class="fas fa-envelope"></i>
-                    <input type="email" id="login-email" placeholder="Email" required>
+                    <input type="email" id="register-email" placeholder="Email" required>
                 </div>
                 <div class="input-group">
                     <i class="fas fa-lock"></i>
-                    <input type="password" id="login-password" placeholder="Password" required>
+                    <input type="password" id="register-password" placeholder="Password" required>
                 </div>
-                <button type="submit">Register</button>
+                <button type="submit" class="btn-primary">Register →</button>
             </form>
-            <p>Already have account? <a href="#" id="show-login">Login here</a></p>
+            <p class="auth-switch">Already have account? <a href="#" id="show-login">Login here</a></p>
         </div>
     </div>
 
