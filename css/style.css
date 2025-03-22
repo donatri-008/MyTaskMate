@@ -167,7 +167,6 @@ body {
 .auth-page {
     display: none !important;
     flex-direction: column;
-    gap: 1.5rem;
 }
 
 .auth-page.active {
