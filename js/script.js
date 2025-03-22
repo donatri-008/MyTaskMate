@@ -139,56 +139,24 @@ document.getElementById('logout-btn').addEventListener('click', () => {
 function initTodoSystem() {
     const todosRef = db.collection('users').doc(currentUser.uid).collection('todos');
     
-    // Tambahkan error handling dan konversi timestamp
-    todosRef.orderBy('createdAt', 'desc').onSnapshot(
-        (snapshot) => {
-            todos = snapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    text: data.text,
-                    completed: data.completed || false,
-                    deadline: data.deadline?.toDate() || null,
-                    createdAt: data.createdAt?.toDate() || new Date(),
-                    category: data.category || 'general'
-                };
-            });
-            console.log("Data diterima:", todos);
-            renderTodos();
-            setupDragAndDrop(); // Pastikan diinisialisasi ulang
-        },
-        (error) => {
-            console.error("Error:", error);
-            alert('Gagal memuat tugas!');
-        }
-    );
-
-    // Inisialisasi event listener untuk tombol add
-    const addBtn = document.getElementById('addBtn');
-    const todoInput = document.getElementById('todoInput');
-    const todoDate = document.getElementById('todoDate');
-
-    addBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        await addTodo(todoInput.value.trim(), todoDate.value);
-    });
-
-    todoInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            addTodo(todoInput.value.trim(), todoDate.value);
-        }
+    todosRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+        todos = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        renderTodos();
     });
 }
 
-// Fungsi addTodo yang diperbaiki
-async function addTodo(text, deadline) {
+async function addTodo() {
+    const text = document.getElementById('todoInput').value.trim();
+    const deadline = document.getElementById('todoDate').value;
+    
     if (!text) {
         alert('Silahkan isi nama task!');
-        document.getElementById('todoInput').focus();
         return;
     }
-
+    
     if (deadline && !validateDate(deadline)) {
         alert('Deadline tidak boleh di masa lalu!');
         return;
@@ -196,19 +164,43 @@ async function addTodo(text, deadline) {
 
     try {
         await db.collection('users').doc(currentUser.uid).collection('todos').add({
-            text: text,
+            text,
             deadline: deadline || null,
             completed: false,
             category: 'general',
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
-        // Reset input field
         document.getElementById('todoInput').value = '';
         document.getElementById('todoDate').value = '';
     } catch (error) {
-        console.error("Error detail:", error);
-        alert(`Gagal menambahkan task: ${error.message}`);
+        alert(`Error: ${error.message}`);
+    }
+}
+
+async function toggleComplete(index) {
+    const todo = todos[index];
+    try {
+        await db.collection('users').doc(currentUser.uid).collection('todos')
+            .doc(todo.id)
+            .update({
+                completed: !todo.completed
+            });
+    } catch (error) {
+        alert(`Error: ${error.message}`);
+    }
+}
+
+async function deleteTodo(index) {
+    if (!confirm('Apakah anda yakin ingin menghapus task ini?')) return;
+    
+    const todo = todos[index];
+    try {
+        await db.collection('users').doc(currentUser.uid).collection('todos')
+            .doc(todo.id)
+            .delete();
+    } catch (error) {
+        alert(`Error: ${error.message}`);
     }
 }
 
@@ -219,30 +211,13 @@ function renderTodos() {
     const pendingList = document.getElementById('pendingList');
     const completedList = document.getElementById('completedList');
     
-    // Kosongkan dengan aman
     pendingList.innerHTML = '';
     completedList.innerHTML = '';
 
-    // Tambahkan placeholder jika kosong
-    const hasPending = todos.some(todo => !todo.completed);
-    const hasCompleted = todos.some(todo => todo.completed);
-
-    if (!hasPending) {
-        pendingList.innerHTML = '<div class="empty-state">🎉 Tidak ada tugas!</div>';
-    }
-    
-    if (!hasCompleted) {
-        completedList.innerHTML = '<div class="empty-state">📭 Belum ada yang selesai</div>';
-    }
-
-    // Render todos dengan urutan terbaru pertama
-    todos.forEach((todo, index) => {
+    getSortedTodos().forEach((todo, index) => {
         const todoElement = createTodoElement(todo, index);
-        if (todo.completed) {
-            completedList.appendChild(todoElement);
-        } else {
-            pendingList.appendChild(todoElement);
-        }
+        todo.completed ? completedList.appendChild(todoElement) : pendingList.appendChild(todoElement);
+        checkDeadlineNotifications(todo);
     });
 }
 
@@ -274,41 +249,11 @@ function createTodoElement(todo, index) {
         </div>
     `;
 
-    todoElement.querySelector('.completeBtn').addEventListener('click', async () => {
-        await toggleComplete(todo.id);
-    });
-    todoElement.querySelector('.deleteBtn').addEventListener('click', async () => {
-        await deleteTodo(todo.id);
-    });
-    todoElement.querySelector('.editBtn').addEventListener('click', () => openEditModal(todo.id));
+    todoElement.querySelector('.completeBtn').addEventListener('click', () => toggleComplete(index));
+    todoElement.querySelector('.deleteBtn').addEventListener('click', () => deleteTodo(index));
+    todoElement.querySelector('.editBtn').addEventListener('click', () => openEditModal(index));
 
     return todoElement;
-}
-
-async function toggleComplete(todoId) {
-    try {
-        const todoRef = db.collection('users').doc(currentUser.uid)
-                          .collection('todos').doc(todoId);
-        const todoDoc = await todoRef.get();
-        
-        await todoRef.update({
-            completed: !todoDoc.data().completed
-        });
-    } catch (error) {
-        alert(`Error: ${error.message}`);
-    }
-}
-
-// Fungsi deleteTodo yang diperbaiki
-async function deleteTodo(todoId) {
-    if (!confirm('Apakah anda yakin ingin menghapus task ini?')) return;
-    
-    try {
-        await db.collection('users').doc(currentUser.uid)
-               .collection('todos').doc(todoId).delete();
-    } catch (error) {
-        alert(`Error: ${error.message}`);
-    }
 }
 
 /* ==================================================
