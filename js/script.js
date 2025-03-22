@@ -455,12 +455,12 @@ function setupEditModal() {
     // Buka modal dengan mengambil data langsung dari Firestore
     window.openEditModal = async (todoId) => {
         try {
-            currentEditId = todoId;
+            console.log("Membuka modal untuk ID:", todoId); // Debugging
             const todoDoc = await db.collection('users').doc(currentUser.uid)
                 .collection('todos').doc(todoId).get();
-
+            
             if (!todoDoc.exists) {
-                alert('Tugas tidak ditemukan!');
+                alert("Dokumen tidak ditemukan!");
                 return;
             }
 
@@ -496,6 +496,7 @@ function setupEditModal() {
 
         const newText = document.getElementById('editText').value.trim();
         const newDeadline = document.getElementById('editDate').value;
+        const deadlineDate = newDeadline ? new Date(newDeadline) : null;
         const category = document.getElementById('editCategory').value;
 
         if (!newText) {
@@ -510,7 +511,7 @@ function setupEditModal() {
                 .doc(currentEditId)
                 .update({
                     text: newText,
-                    deadline: newDeadline || null,
+                    deadline: deadlineDate,
                     category: category,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp() // Tambah field update
                 });
