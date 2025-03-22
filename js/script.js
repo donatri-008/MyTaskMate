@@ -453,10 +453,6 @@ function setupEditModal() {
     const saveBtn = document.getElementById('saveEdit');
     let currentEditId = null;
 
-    // 1. Fix CSS Classes
-    modal.classList.add('hidden'); // Initialize modal as hidden
-
-    // 2. Enhanced openModal function
     window.openEditModal = function (todoId) {
         currentEditId = todoId; // Simpan ID yang sedang diedit
         const todo = document.getElementById(todoId);
