@@ -23,6 +23,33 @@ const db = firebase.firestore();
     document.getElementById('register-page').classList.add('active');
   });
 
+// Handle Registrasi
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const username = document.getElementById('register-username').value.trim();
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+
+    try {
+        // 1. Buat user di Firebase Auth
+        const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+        
+        // 2. Simpan username ke Firestore
+        await db.collection('users').doc(userCredential.user.uid).set({
+            username: username,
+            email: email,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // 3. Redirect ke halaman utama
+        window.location.href = 'index.html';
+        
+    } catch (error) {
+        alert(`Registrasi Gagal: ${error.message}`);
+    }
+});
+
   // Handle Login Link
   document.getElementById('show-login').addEventListener('click', (e) => {
     e.preventDefault();
@@ -70,18 +97,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 FUNGSI INISIALISASI
    ================================================== */
 function initAuth() {
-  auth.onAuthStateChanged(user => {
-      if (!user) {
-          if (window.location.pathname !== '/index.html') {
-              window.location.href = 'index.html';
+  auth.onAuthStateChanged(async (user) => {
+      if (user) {
+          // Ambil data dari Firestore
+          const userDoc = await db.collection('users').doc(user.uid).get();
+          const userData = userDoc.data();
+          
+          // Tampilkan username
+          const usernameElement = document.getElementById('username');
+          if (userData && userData.username) {
+              usernameElement.textContent = `Hi, ${userData.username}`;
+          } else {
+              // Fallback ke email jika username tidak ada
+              usernameElement.textContent = `Hi, ${user.email.split('@')[0]}`;
           }
       } else {
-          currentUser = user;
-          const usernameElement = document.getElementById('username');
-          if (usernameElement) {
-              usernameElement.textContent = `Hi, ${user.displayName || user.email.split('@')[0]}`;
-          }
-          initTodoSystem();
+          window.location.href = 'index.html';
       }
   });
 }
