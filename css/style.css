@@ -181,13 +181,32 @@ body {
 }
 
 header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    position: relative;
+    padding: 1.5rem 0;
     margin-bottom: 2rem;
 }
 
+.header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.title-center {
+    text-align: center;
+    margin: 0;
+    font-size: 2.5rem;
+    color: #2d3748;
+}
+
 #user-info {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     align-items: center;
     gap: 1rem;
