@@ -42,6 +42,12 @@ body {
     display: flex;
 }
 
+#show-register, #show-login {
+  color: #4285f4;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 #google-login {
     background: #4285f4;
     color: white;
