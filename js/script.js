@@ -473,7 +473,7 @@ function setupEditModal() {
             modal.classList.remove('hidden');
             modal.classList.add('visible');
         } catch (error) {
-            alert(Error: ${error.message});
+            alert(`Error: ${error.message}`);
         }
     };
 
@@ -507,32 +507,19 @@ function setupEditModal() {
 
         try {
             await db.collection('users').doc(currentUser.uid)
-                .collection('todos').doc(currentEditId).update({
+                .collection('todos')
+                .doc(currentEditId)
+                .update({
                     text: newText,
-                    deadline: deadlineDate ? deadlineDate.toISOString() : null,
-                    category: category
+                    deadline: deadlineDate,
+                    category: category,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp() // Tambah field update
                 });
-        
-            alert('Perubahan berhasil disimpan!');
+
             closeModal();
         } catch (error) {
-            alert(`Error saat menyimpan: ${error.message}`);
+            console.error('Error updating document:', error);
+            alert(`Gagal menyimpan perubahan: ${error.message}`);
         }
     });
-    async function deleteTodo(todoId) {
-      console.log("Menghapus ID:", todoId); // Debugging
-      if (!confirm("Yakin ingin menghapus tugas ini?")) return;
-      try {
-          await db.collection('users').doc(currentUser.uid)
-              .collection('todos').doc(todoId).delete();
-          console.log("Berhasil dihapus");
-      } catch (error) {
-          alert(`Gagal menghapus: ${error.message}`);
-      }
-  }
-  // Fungsi untuk menutup modal edit
-  function closeModal() {
-      document.getElementById("editModal").style.display = "none";
-      currentEditId = null;
-  }
 }
