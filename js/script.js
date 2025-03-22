@@ -454,8 +454,7 @@ function setupEditModal() {
     let currentEditId = null;
 
     window.openEditModal = function (todoId) {
-        currentEditId = todoId; // Simpan ID yang sedang diedit
-        const todo = document.getElementById(todoId);
+        currentEditId = todoId;
     
         if (todo) {
             document.getElementById("editText").value = todo.querySelector(".todo-text").innerText;
