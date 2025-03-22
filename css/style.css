@@ -28,7 +28,7 @@ body {
 #auth-container {
     width: 100%;
     max-width: 440px;
-    margin: 2rem;
+    margin: 0 auto;
     padding: 2.5rem;
     background: white;
     border-radius: 1.5rem;
