@@ -16,57 +16,78 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-  // Handle Register Link
-  document.getElementById('show-register').addEventListener('click', (e) => {
-    e.preventDefault();
-    document.getElementById('login-page').classList.remove('active');
-    document.getElementById('register-page').classList.add('active');
-  });
+// Handle Register Link
+document.getElementById('show-register').addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('login-page').classList.remove('active');
+  document.getElementById('register-page').classList.add('active');
+});
 
-// Handle Registrasi
-document.getElementById('register-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const username = document.getElementById('register-username').value.trim();
-    const email = document.getElementById('register-email').value;
-    const password = document.getElementById('register-password').value;
+// Handle Login Link
+document.getElementById('show-login').addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('register-page').classList.remove('active');
+  document.getElementById('login-page').classList.add('active');
+});
 
+  // Handle Google Login
+document.getElementById('google-login').addEventListener('click', async () => {
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await auth.signInWithPopup(provider);
+    window.location.href = 'app.html';
+  } catch (error) {
+    console.error('Google Login Error:', error);
+    alert(`Login Gagal: ${error.message}`);
+  }
+});
+
+document.getElementById('google-login').addEventListener('click', async () => {
     try {
-        // 1. Buat user di Firebase Auth
-        const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await auth.signInWithPopup(provider);
         
-        // 2. Simpan username ke Firestore
-        await db.collection('users').doc(userCredential.user.uid).set({
-            username: username,
-            email: email,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        // 3. Redirect ke halaman utama
+        // Cek apakah user baru
+        if (result.additionalUserInfo.isNewUser) {
+            // Simpan info dari Google
+            await db.collection('users').doc(result.user.uid).set({
+                username: result.user.displayName || result.user.email.split('@')[0],
+                email: result.user.email,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+        
         window.location.href = 'index.html';
-        
     } catch (error) {
-        alert(`Registrasi Gagal: ${error.message}`);
+        alert(`Google Login Gagal: ${error.message}`);
     }
 });
 
-  // Handle Login Link
-  document.getElementById('show-login').addEventListener('click', (e) => {
-    e.preventDefault();
-    document.getElementById('register-page').classList.remove('active');
-    document.getElementById('login-page').classList.add('active');
-  });
-
-  // Handle Google Login
-  document.getElementById('google-login').addEventListener('click', async () => {
-    try {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      await auth.signInWithPopup(provider);
-      window.location.href = 'app.html';
-    } catch (error) {
-      console.error('Google Login Error:', error);
-      alert(`Login Gagal: ${error.message}`);
-    }
+  // Handle Registrasi
+  document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('register-username').value.trim();
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
+  
+      try {
+          // 1. Buat user di Firebase Auth
+          const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+          
+          // 2. Simpan username ke Firestore
+          await db.collection('users').doc(userCredential.user.uid).set({
+              username: username,
+              email: email,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+  
+          // 3. Redirect ke halaman utama
+          window.location.href = 'index.html';
+          
+      } catch (error) {
+          alert(`Registrasi Gagal: ${error.message}`);
+      }
   });
 
 /* ==================================================
