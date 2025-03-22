@@ -175,9 +175,13 @@ body {
 
 /* Main App */
 #app-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+    margin: 2rem auto;
     max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
+    min-height: 80vh;
+    overflow: hidden;
 }
 
 header {
