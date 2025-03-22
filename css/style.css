@@ -212,7 +212,7 @@ header {
 }
 
 h1 {
-    text-align: center !important;
+    text-align: center;
     color: var(--dark-color);
     margin-bottom: 1.5rem;
     font-weight: 600;
