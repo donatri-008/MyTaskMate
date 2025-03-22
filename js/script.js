@@ -56,16 +56,23 @@ auth.onAuthStateChanged(async (user) => {
 });
 
 // Auth Event Listeners
-document.getElementById('show-register').addEventListener('click', (e) => {
-    e.preventDefault();
-    document.getElementById('login-page').classList.remove('active');
-    document.getElementById('register-page').classList.add('active');
-});
+document.addEventListener('DOMContentLoaded', function() {
+    const showRegister = document.getElementById('show-register');
+    const showLogin = document.getElementById('show-login');
+    const loginPage = document.getElementById('login-page');
+    const registerPage = document.getElementById('register-page');
 
-document.getElementById('show-login').addEventListener('click', (e) => {
-    e.preventDefault();
-    document.getElementById('register-page').classList.remove('active');
-    document.getElementById('login-page').classList.add('active');
+    showRegister.addEventListener('click', function(e) {
+        e.preventDefault();
+        loginPage.classList.remove('active');
+        registerPage.classList.add('active');
+    });
+
+    showLogin.addEventListener('click', function(e) {
+        e.preventDefault();
+        registerPage.classList.remove('active');
+        loginPage.classList.add('active');
+    });
 });
 
 document.getElementById('login-form').addEventListener('submit', async (e) => {
