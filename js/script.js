@@ -454,8 +454,6 @@ function setupEditModal() {
 
     // Buka modal dengan mengambil data langsung dari Firestore
     window.openEditModal = async (todoId) => {
-      currentEditId = todoId;
-      
         try {
             console.log("Membuka modal untuk ID:", todoId); // Debugging
             const todoDoc = await db.collection('users').doc(currentUser.uid)
