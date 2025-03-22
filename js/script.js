@@ -139,63 +139,39 @@ document.getElementById('logout-btn').addEventListener('click', () => {
 function initTodoSystem() {
     const todosRef = db.collection('users').doc(currentUser.uid).collection('todos');
     
-    todosRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-        todos = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-        renderTodos();
-        setupDragAndDrop();
-    });
-
-    // Add Task Event Listener
-    document.getElementById('addBtn').addEventListener('click', (e) => {
-        e.preventDefault();
-        addTodo();
-    });
-
-    // Enter Key Listener
-    document.getElementById('todoInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            addTodo();
+    // Tambahkan error handling
+    todosRef.orderBy('createdAt', 'desc').onSnapshot(
+        (snapshot) => {
+            todos = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                // Konversi timestamp ke Date
+                createdAt: doc.data().createdAt?.toDate(),
+                deadline: doc.data().deadline?.toDate()
+            }));
+            renderTodos();
+        },
+        (error) => {
+            console.error("Error getting todos:", error);
+            alert('Gagal memuat tugas!');
         }
-    });
+    );
 }
 
 async function addTodo() {
-    const textInput = document.getElementById('todoInput');
-    const dateInput = document.getElementById('todoDate');
-    
-    const text = textInput.value.trim();
-    const deadline = dateInput.value;
-
-    if (!text) {
-        alert('Silahkan isi nama task!');
-        textInput.focus();
-        return;
-    }
-
-    if (deadline && !validateDate(deadline)) {
-        alert('Deadline tidak boleh di masa lalu!');
-        dateInput.focus();
-        return;
-    }
-
     try {
-        await db.collection('users').doc(currentUser.uid).collection('todos').add({
-            text,
+        const docRef = await db.collection('users').doc(currentUser.uid).collection('todos').add({
+            text: text,
             deadline: deadline || null,
             completed: false,
-            category: 'general',
+            // Pastikan field ini ada
+            category: 'general', 
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        
-        textInput.value = '';
-        dateInput.value = '';
-        textInput.focus();
+
+        console.log("Task ditambahkan dengan ID:", docRef.id); // Debugging
     } catch (error) {
-        alert(`Error: ${error.message}`);
+        console.error("Error detail:", error); // Debugging lengkap
     }
 }
 
@@ -232,13 +208,23 @@ function renderTodos() {
     const pendingList = document.getElementById('pendingList');
     const completedList = document.getElementById('completedList');
     
-    pendingList.innerHTML = '';
-    completedList.innerHTML = '';
+    // Kosongkan dengan benar
+    pendingList.innerHTML = '<div class="empty-state">📭 Tidak ada tugas</div>';
+    completedList.innerHTML = '<div class="empty-state">🎉 Semua selesai!</div>';
+
+    // Debugging
+    console.log("Total tugas:", todos.length);
+    console.log("Data tugas:", todos);
 
     getSortedTodos().forEach((todo, index) => {
         const todoElement = createTodoElement(todo, index);
-        todo.completed ? completedList.appendChild(todoElement) : pendingList.appendChild(todoElement);
-        checkDeadlineNotifications(todo);
+        if (todo.completed) {
+            completedList.appendChild(todoElement);
+            completedList.querySelector('.empty-state')?.remove();
+        } else {
+            pendingList.appendChild(todoElement);
+            pendingList.querySelector('.empty-state')?.remove();
+        }
     });
 }
 
