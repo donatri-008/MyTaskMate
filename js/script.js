@@ -137,25 +137,26 @@ document.getElementById('logout-btn').addEventListener('click', () => {
                 SISTEM TODO DENGAN FIREBASE
    ================================================== */
 function initTodoSystem() {
-    const todosRef = db.collection('users').doc(currentUser.uid).collection('todos');
+    const todosRef = db.collection("users").doc(currentUser.uid).collection("todos");
     
-    // Tambahkan konversi timestamp ke Date
-    todosRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-        todos = snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
+    todosRef.orderBy("createdAt", "desc").onSnapshot(
+        (snapshot) => {
+            console.log("Data diterima dari Firestore:", snapshot.docs); // Debugging
+            todos = snapshot.docs.map((doc) => ({
                 id: doc.id,
-                text: data.text,
-                completed: data.completed || false,
-                deadline: data.deadline?.toDate() || null, // Konversi ke Date
-                createdAt: data.createdAt?.toDate() || new Date(),
-                category: data.category || 'general'
-            };
-        });
-        console.log("Data tugas diterima:", todos); // Debugging
-        renderTodos();
-        setupDragAndDrop();
-    });
+                text: doc.data().text,
+                completed: doc.data().completed || false,
+                deadline: doc.data().deadline ? new Date(doc.data().deadline) : null,
+                createdAt: doc.data().createdAt ? new Date(doc.data().createdAt.seconds * 1000) : new Date(),
+            }));
+            renderTodos();
+        },
+        (error) => {
+            console.error("Error Firestore:", error); // Debugging error
+            alert("Gagal memuat tugas!");
+        }
+    );
+
 
     // Event listener untuk tombol Add Task
     document.getElementById('addBtn').addEventListener('click', async (e) => {
@@ -217,34 +218,31 @@ async function addTodo() {
                 FUNGSI TAMPILAN
    ================================================== */
 function renderTodos() {
-    const pendingList = document.getElementById('pendingList');
-    const completedList = document.getElementById('completedList');
+    const pendingList = document.getElementById("pendingList");
+    const completedList = document.getElementById("completedList");
     
-    // Kosongkan dengan aman
-    pendingList.innerHTML = '';
-    completedList.innerHTML = '';
+    pendingList.innerHTML = "";
+    completedList.innerHTML = "";
 
-    // Tambahkan placeholder jika kosong
-    const hasPending = todos.some(todo => !todo.completed);
-    const hasCompleted = todos.some(todo => todo.completed);
+    // Debugging: Pastikan todos ada
+    console.log("Daftar Tugas:", todos);
 
-    if (!hasPending) {
-        pendingList.innerHTML = '<div class="empty-state">🎉 Tidak ada tugas!</div>';
-    }
-    
-    if (!hasCompleted) {
-        completedList.innerHTML = '<div class="empty-state">📭 Belum ada yang selesai</div>';
-    }
-
-    // Render todos dengan urutan terbaru pertama
-    todos.forEach((todo, index) => {
-        const todoElement = createTodoElement(todo, index);
+    todos.forEach((todo) => {
+        const todoElement = createTodoElement(todo);
         if (todo.completed) {
             completedList.appendChild(todoElement);
         } else {
             pendingList.appendChild(todoElement);
         }
     });
+
+    // Tambahkan placeholder jika kosong
+    if (pendingList.children.length === 0) {
+        pendingList.innerHTML = '<div class="empty-state">🎉 Tidak ada tugas!</div>';
+    }
+    if (completedList.children.length === 0) {
+        completedList.innerHTML = '<div class="empty-state">📭 Belum ada yang selesai</div>';
+    }
 }
 
 // Fungsi pembuat elemen todo yang diperbaiki
