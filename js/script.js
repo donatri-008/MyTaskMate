@@ -278,11 +278,15 @@ function createTodoElement(todo, index) {
         <div class="actions">
             <button class="editBtn">✏️</button>
             <button class="completeBtn">${todo.completed ? 'Batalkan' : 'Selesai'}</button>
-            <button class="deleteBtn">🗑️</button>
+            <button class="deleteBtn">🗑️ Delete</button>
         </div>
     `;
 
     // Event listener yang diperbaiki
+    todoElement.querySelector('.editBtn').addEventListener('click', () => {
+        openEditModal(todo.id);
+    });
+  
     todoElement.querySelector('.completeBtn').addEventListener('click', async () => {
         await toggleComplete(todo.id);
     });
@@ -446,28 +450,49 @@ function setupEditModal() {
     const modal = document.getElementById('editModal');
     const closeBtns = document.querySelectorAll('.close-btn, .cancel-btn');
     const saveBtn = document.getElementById('saveEdit');
+    let currentEditId = null; // Gunakan ID dokumen Firestore
 
-    window.openEditModal = (index) => {
-        currentEditIndex = index;
-        const todo = todos[index];
-        document.getElementById('editText').value = todo.text;
-        document.getElementById('editDate').value = todo.deadline || '';
-        document.getElementById('editCategory').value = todo.category || 'general';
-        modal.style.display = 'block';
+    // Buka modal dengan mengambil data langsung dari Firestore
+    window.openEditModal = async (todoId) => {
+        try {
+            currentEditId = todoId;
+            const todoDoc = await db.collection('users').doc(currentUser.uid)
+                .collection('todos').doc(todoId).get();
+
+            if (!todoDoc.exists) {
+                alert('Tugas tidak ditemukan!');
+                return;
+            }
+
+            const todo = todoDoc.data();
+            document.getElementById('editText').value = todo.text;
+            document.getElementById('editDate').value = todo.deadline || '';
+            document.getElementById('editCategory').value = todo.category || 'general';
+            
+            // Tampilkan modal dengan class CSS
+            modal.classList.remove('hidden');
+            modal.classList.add('visible');
+        } catch (error) {
+            alert(`Error: ${error.message}`);
+        }
     };
 
+    // Tutup modal
     const closeModal = () => {
-        modal.style.display = 'none';
-        currentEditIndex = null;
+        modal.classList.remove('visible');
+        modal.classList.add('hidden');
+        currentEditId = null;
     };
 
+    // Event listeners
     closeBtns.forEach(btn => btn.addEventListener('click', closeModal));
     window.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
 
+    // Handle save
     saveBtn.addEventListener('click', async () => {
-        if (currentEditIndex === null) return;
+        if (!currentEditId) return;
 
         const newText = document.getElementById('editText').value.trim();
         const newDeadline = document.getElementById('editDate').value;
@@ -475,26 +500,25 @@ function setupEditModal() {
 
         if (!newText) {
             alert('Nama tugas tidak boleh kosong!');
-            return;
-        }
-
-        if (newDeadline && !validateDate(newDeadline)) {
-            alert('Deadline tidak boleh di masa lalu!');
+            document.getElementById('editText').focus();
             return;
         }
 
         try {
-            await db.collection('users').doc(currentUser.uid).collection('todos')
-                .doc(todos[currentEditIndex].id)
+            await db.collection('users').doc(currentUser.uid)
+                .collection('todos')
+                .doc(currentEditId)
                 .update({
                     text: newText,
                     deadline: newDeadline || null,
-                    category: category
+                    category: category,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp() // Tambah field update
                 });
-            
+
             closeModal();
         } catch (error) {
-            alert(`Error: ${error.message}`);
+            console.error('Error updating document:', error);
+            alert(`Gagal menyimpan perubahan: ${error.message}`);
         }
     });
 }
