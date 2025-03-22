@@ -44,15 +44,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 FUNGSI INISIALISASI
    ================================================== */
 function initAuth() {
-    auth.onAuthStateChanged(user => {
-        if (!user) {
-            window.location.href = 'index.html';
-        } else {
-            currentUser = user;
-            document.getElementById('username').textContent = `Hi, ${user.displayName || user.email.split('@')[0]}`;
-            initTodoSystem();
-        }
-    });
+  auth.onAuthStateChanged(user => {
+      if (!user) {
+          if (window.location.pathname !== '/index.html') {
+              window.location.href = 'index.html';
+          }
+      } else {
+          currentUser = user;
+          const usernameElement = document.getElementById('username');
+          if (usernameElement) {
+              usernameElement.textContent = `Hi, ${user.displayName || user.email.split('@')[0]}`;
+          }
+          initTodoSystem();
+      }
+  });
 }
 
 function initDOMElements() {
