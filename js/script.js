@@ -24,6 +24,8 @@ let todos = [];
 let currentEditIndex = null;
 let dragStartIndex = null;
 
+const authContainer = document.getElementById('auth-container');
+const appContainer = document.getElementById('app-container');
 const categories = {
     general: { name: 'Umum', color: '#a8d8ea' },
     work: { name: 'Pekerjaan', color: '#aa96da' },
@@ -44,82 +46,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 FUNGSI INISIALISASI
    ================================================== */
 function initAuth() {
-    auth.onAuthStateChanged(async (user) => {
-        const authContainer = document.getElementById('auth-container');
-        const appContainer = document.getElementById('app-container');
+auth.onAuthStateChanged(async (user) => {
+    currentUser = user;
+    
+    if (user) {
+        // Load user data
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        const userData = userDoc.data();
         
-        if (user) {
-            currentUser = user;
-            authContainer.classList.add('hidden');
-            appContainer.classList.remove('hidden');
-            initUserInterface(user);
-            initTodoSystem();
-        } else {
-            authContainer.classList.remove('hidden');
-            appContainer.classList.add('hidden');
-        }
-    });
-}
+        // Update UI
+        authContainer.classList.add('hidden');
+        appContainer.classList.remove('hidden');
+        document.getElementById('username').textContent = `Hi, ${userData?.username || user.email.split('@')[0]}`;
+        
+        // Initialize Todo System
+        initTodoSystem();
+    } else {
+        authContainer.classList.remove('hidden');
+        appContainer.classList.add('hidden');
+    }
+});
 
-function initUserInterface(user) {
-    const usernameElement = document.getElementById('username');
-    db.collection('users').doc(user.uid).get().then(doc => {
-        const userData = doc.data();
-        usernameElement.textContent = `Hi, ${userData?.username || user.email.split('@')[0]}`;
-    });
-}
+// Auth Event Listeners
+document.getElementById('show-register').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('login-page').classList.remove('active');
+    document.getElementById('register-page').classList.add('active');
+});
 
-function setupEventListeners() {
-    // Auth Listeners
-    document.getElementById('show-register').addEventListener('click', (e) => {
-        e.preventDefault();
-        document.getElementById('login-page').classList.remove('active');
-        document.getElementById('register-page').classList.add('active');
-    });
+document.getElementById('show-login').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('register-page').classList.remove('active');
+    document.getElementById('login-page').classList.add('active');
+});
 
-    document.getElementById('show-login').addEventListener('click', (e) => {
-        e.preventDefault();
-        document.getElementById('register-page').classList.remove('active');
-        document.getElementById('login-page').classList.add('active');
-    });
-
-    document.getElementById('google-login').addEventListener('click', handleGoogleLogin);
-    document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
-
-    // Todo Listeners
-    document.getElementById('addBtn').addEventListener('click', addTodo);
-    document.getElementById('todoInput').addEventListener('keypress', e => {
-        if (e.key === 'Enter') addTodo();
-    });
-
-    // Form Submissions
-    document.getElementById('login-form').addEventListener('submit', e => {
-        e.preventDefault();
-        handleLogin(
-            document.getElementById('login-email').value,
-            document.getElementById('login-password').value
-        );
-    });
-
-    document.getElementById('register-form').addEventListener('submit', e => {
-        e.preventDefault();
-        handleRegister(
-            document.getElementById('register-username').value,
-            document.getElementById('register-email').value,
-            document.getElementById('register-password').value
-        );
-    });
-}
-
-async function handleLogin(email, password) {
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
     try {
         await auth.signInWithEmailAndPassword(email, password);
     } catch (error) {
-        alert(`Login failed: ${error.message}`);
+        alert(error.message);
     }
-}
+});
 
-async function handleRegister(username, email, password) {
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('register-username').value.trim();
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+
     try {
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         await db.collection('users').doc(userCredential.user.uid).set({
@@ -128,14 +106,15 @@ async function handleRegister(username, email, password) {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
     } catch (error) {
-        alert(`Registration failed: ${error.message}`);
+        alert(error.message);
     }
-}
+});
 
-async function handleGoogleLogin() {
+document.getElementById('google-login').addEventListener('click', async () => {
     try {
         const provider = new firebase.auth.GoogleAuthProvider();
         const result = await auth.signInWithPopup(provider);
+        
         if (result.additionalUserInfo.isNewUser) {
             await db.collection('users').doc(result.user.uid).set({
                 username: result.user.displayName || result.user.email.split('@')[0],
@@ -144,9 +123,14 @@ async function handleGoogleLogin() {
             });
         }
     } catch (error) {
-        alert(`Google login failed: ${error.message}`);
+        alert(error.message);
     }
-}
+});
+
+document.getElementById('logout-btn').addEventListener('click', () => {
+    auth.signOut();
+});
+
 
 function initDOMElements() {
     setupEditModal();
