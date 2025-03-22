@@ -57,25 +57,30 @@ auth.onAuthStateChanged(async (user) => {
 
 // Auth Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
+    // Pastikan ID benar
     const showRegister = document.getElementById('show-register');
     const showLogin = document.getElementById('show-login');
     const loginPage = document.getElementById('login-page');
     const registerPage = document.getElementById('register-page');
 
-    showRegister.addEventListener('click', function(e) {
+    // Debugging
+    console.log('Elements:', {showRegister, showLogin, loginPage, registerPage});
+
+    showRegister?.addEventListener('click', function(e) {
         e.preventDefault();
         loginPage.classList.remove('active');
         registerPage.classList.add('active');
     });
 
-    showLogin.addEventListener('click', function(e) {
+    showLogin?.addEventListener('click', function(e) {
         e.preventDefault();
         registerPage.classList.remove('active');
         loginPage.classList.add('active');
     });
 });
 
-document.getElementById('login-form').addEventListener('submit', async (e) => {
+// Form handlers (PASTIKAN ID REGISTER FORM BENAR)
+document.getElementById('login-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
@@ -87,11 +92,12 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     }
 });
 
-document.getElementById('register-form').addEventListener('submit', async (e) => {
+document.getElementById('register-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    // PASTIKAN ID BENAR!
     const username = document.getElementById('register-username').value.trim();
-    const email = document.getElementById('register-email').value;
-    const password = document.getElementById('register-password').value;
+    const email = document.getElementById('register-email').value; // <-- ini yg benar
+    const password = document.getElementById('register-password').value; // <-- ini yg benar
 
     try {
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
