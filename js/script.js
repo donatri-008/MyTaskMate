@@ -16,6 +16,32 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+  // Handle Register Link
+  document.getElementById('show-register').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('login-page').classList.remove('active');
+    document.getElementById('register-page').classList.add('active');
+  });
+
+  // Handle Login Link
+  document.getElementById('show-login').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('register-page').classList.remove('active');
+    document.getElementById('login-page').classList.add('active');
+  });
+
+  // Handle Google Login
+  document.getElementById('google-login').addEventListener('click', async () => {
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      await auth.signInWithPopup(provider);
+      window.location.href = 'app.html';
+    } catch (error) {
+      console.error('Google Login Error:', error);
+      alert(`Login Gagal: ${error.message}`);
+    }
+  });
+
 /* ==================================================
                 VARIABEL GLOBAL
    ================================================== */
