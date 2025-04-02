@@ -137,83 +137,73 @@ document.getElementById('logout-btn').addEventListener('click', () => {
                 SISTEM TODO DENGAN FIREBASE
    ================================================== */
 function initTodoSystem() {
+    // Inisialisasi referensi Firestore
     const todosRef = db.collection("users").doc(currentUser.uid).collection("todos");
     
-    todosRef.orderBy("createdAt", "desc").onSnapshot(
-        (snapshot) => {
-            console.log("Data diterima dari Firestore:", snapshot.docs); // Debugging
-            todos = snapshot.docs.map((doc) => ({
-                id: doc.id,
-                text: doc.data().text,
-                completed: doc.data().completed || false,
-                deadline: doc.data().deadline?.toDate() || null,
-                createdAt: doc.data().createdAt?.toDate() || new Date(),
-                category: doc.data().category || 'general'
-            }));
-            renderTodos();
-        },
-        (error) => {
-            console.error("Error Firestore:", error); // Debugging error
-            alert("Gagal memuat tugas!");
-        }
-    );
+    // Setup real-time listener untuk todos
+    const unsubscribe = todosRef
+        .orderBy("createdAt", "desc")
+        .onSnapshot(
+            (snapshot) => {
+                todos = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    text: doc.data().text,
+                    completed: doc.data().completed || false,
+                    deadline: doc.data().deadline?.toDate() || null,
+                    category: doc.data().category || 'general',
+                    createdAt: doc.data().createdAt?.toDate() || new Date(),
+                }));
+                renderTodos();
+                setupEditModal(); // Inisialisasi modal edit
+            },
+            (error) => {
+                console.error("Error fetching todos:", error);
+                showNotification('⚠️ Gagal memuat tugas!', 'error');
+            }
+        );
 
-
-    // Event listener untuk tombol Add Task
-    document.getElementById('addBtn').addEventListener('click', async (e) => {
+    // Event listeners untuk input baru
+    const addBtn = document.getElementById('addBtn');
+    const todoInput = document.getElementById('todoInput');
+    
+    const handleAddTodo = async (e) => {
         e.preventDefault();
-        await addTodo();
-    });
+        const text = todoInput.value.trim();
+        const deadline = document.getElementById('todoDate').value;
 
-    // Event listener untuk keyboard Enter
-    document.getElementById('todoInput').addEventListener('keypress', async (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            await addTodo();
+        if (!text) {
+            showNotification('📝 Silahkan isi nama task!', 'error');
+            todoInput.focus();
+            return;
         }
-    });
-  setupEditModal();
-}
 
-// Fungsi addTodo yang diperbaiki
-async function addTodo() {
-    const textInput = document.getElementById('todoInput');
-    const dateInput = document.getElementById('todoDate');
-    
-    const text = textInput.value.trim();
-    const deadline = dateInput.value;
-    
-    const todoData = {
-        text: text,
-        completed: false,
-        category: 'general',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        try {
+            const newTodo = {
+                text: text,
+                completed: false,
+                category: 'general',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            if (deadline) {
+                const deadlineDate = new Date(deadline);
+                newTodo.deadline = firebase.firestore.Timestamp.fromDate(deadlineDate);
+            }
+
+            await todosRef.add(newTodo);
+            todoInput.value = '';
+            document.getElementById('todoDate').value = '';
+            showNotification('✅ Task berhasil ditambahkan!', 'success');
+        } catch (error) {
+            console.error("Error adding todo:", error);
+            showNotification('❌ Gagal menambahkan task!', 'error');
+        }
     };
 
-    if (deadline) {
-        const deadlineDate = new Date(deadline);
-        todoData.deadline = firebase.firestore.Timestamp.fromDate(deadlineDate);
-    }
-
-    try {
-        await db.collection('users').doc(currentUser.uid).collection('todos').add(todoData);
-            text: text,
-            deadline: deadline || null,
-            completed: false,
-            category: 'general',
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        // Reset form
-        textInput.value = '';
-        dateInput.value = '';
-        textInput.focus();
-        
-        console.log("Task berhasil ditambahkan");
-    } catch (error) {
-        console.error("Error menambahkan task:", error);
-        alert(`Gagal menambahkan task: ${error.message}`);
-    }
+    addBtn.addEventListener('click', handleAddTodo);
+    todoInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleAddTodo(e);
+    });
 }
 
 /* ==================================================
@@ -248,56 +238,122 @@ function renderTodos() {
 }
 
 // Fungsi pembuat elemen todo yang diperbaiki
-function createTodoElement(todo, index) {
+function createTodoElement(todo) {
     const todoElement = document.createElement('div');
     todoElement.className = `todo-item ${todo.completed ? 'completed' : ''}`;
-    todoElement.dataset.id = todo.id; // Gunakan ID Firestore
-    
-    // Konversi tanggal ke lokal Indonesia
-    const deadlineDate = todo.deadline ? 
-        new Date(todo.deadline).toLocaleDateString('id-ID', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-        }) : null;
+    todoElement.dataset.id = todo.id;
+    todoElement.draggable = true;
 
-    const deadlineText = deadlineDate ? 
-        `<span class="deadline ${checkOverdue(todo.deadline) ? 'overdue' : ''}">
-            📅 ${deadlineDate}
-        </span>` : 
-        '<span class="deadline">Tanpa deadline</span>';
+    // Format tanggal deadline
+    const deadlineDate = todo.deadline?.toLocaleDateString('id-ID', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    });
 
+    // Styling kategori
     const category = categories[todo.category || 'general'];
-    
+    const categoryStyle = `style="background:${category.color}; color: ${category.color === '#fcbad3' ? '#000' : '#fff'}"`;
+
+    // Template HTML
     todoElement.innerHTML = `
         <div class="todo-content">
-            <span class="category-tag" style="background:${category.color}">
+            <span class="category-tag" ${categoryStyle}>
                 ${category.name}
             </span>
             <span class="todo-text">${todo.text}</span>
-            ${deadlineText}
+            ${todo.deadline ? `
+                <span class="deadline ${todo.deadline < new Date() ? 'overdue' : ''}">
+                    📅 ${deadlineDate}
+                </span>
+            ` : '<span class="deadline">⏳ Tanpa deadline</span>'}
         </div>
         <div class="actions">
-            <button class="editBtn">✏️</button>
-            <button class="completeBtn">${todo.completed ? '❌' : '✅'}</button>
-            <button class="deleteBtn">🗑️</button>
+            <button class="editBtn" title="Edit task">✏️</button>
+            <button class="completeBtn" title="${todo.completed ? 'Tandai belum selesai' : 'Tandai selesai'}">
+                ${todo.completed ? '↩️' : '✅'}
+            </button>
+            <button class="deleteBtn" title="Hapus task">🗑️</button>
         </div>
     `;
 
-    // Event listener yang diperbaiki
-    todoElement.querySelector('.editBtn').addEventListener('click', () => {
-        openEditModal(todo.id);
-    });
-  
-    todoElement.querySelector('.completeBtn').addEventListener('click', async () => {
-        await toggleComplete(todo.id);
-    });
+    // Event Listeners
+    const editBtn = todoElement.querySelector('.editBtn');
+    const completeBtn = todoElement.querySelector('.completeBtn');
+    const deleteBtn = todoElement.querySelector('.deleteBtn');
+
+    editBtn.addEventListener('click', () => openEditModal(todo.id));
     
-    todoElement.querySelector('.deleteBtn').addEventListener('click', async () => {
-        await deleteTodo(todo.id);
+    completeBtn.addEventListener('click', async () => {
+        try {
+            await db.collection('users').doc(currentUser.uid)
+                .collection('todos')
+                .doc(todo.id)
+                .update({
+                    completed: !todo.completed,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+        } catch (error) {
+            showNotification('❌ Gagal mengubah status!', 'error');
+        }
+    });
+
+    deleteBtn.addEventListener('click', async () => {
+        if (confirm('Apakah anda yakin ingin menghapus task ini?')) {
+            try {
+                await db.collection('users').doc(currentUser.uid)
+                    .collection('todos')
+                    .doc(todo.id)
+                    .delete();
+                showNotification('🗑️ Task dihapus!', 'success');
+            } catch (error) {
+                showNotification('❌ Gagal menghapus task!', 'error');
+            }
+        }
     });
 
     return todoElement;
+}
+
+async function openEditModal(todoId) {
+    const modal = document.getElementById('editModal');
+    const editText = document.getElementById('editText');
+    const editDate = document.getElementById('editDate');
+    const editCategory = document.getElementById('editCategory');
+
+    try {
+        // Ambil data dari Firestore
+        const todoDoc = await db.collection('users').doc(currentUser.uid)
+            .collection('todos').doc(todoId).get();
+
+        if (!todoDoc.exists) {
+            showNotification('📄 Task tidak ditemukan!', 'error');
+            return;
+        }
+
+        const todoData = todoDoc.data();
+        
+        // Format tanggal untuk input
+        const deadlineDate = todoData.deadline?.toDate();
+        const formattedDate = deadlineDate ? 
+            deadlineDate.toISOString().split('T')[0] : 
+            '';
+
+        // Isi form
+        editText.value = todoData.text;
+        editDate.value = formattedDate;
+        editCategory.value = todoData.category || 'general';
+
+        // Tampilkan modal
+        modal.classList.add('visible');
+        modal.classList.remove('hidden');
+        modal.currentEditId = todoId; // Simpan ID di properti modal
+
+    } catch (error) {
+        console.error("Error opening edit modal:", error);
+        showNotification('❌ Gagal membuka editor!', 'error');
+    }
 }
 
 /* ==================================================
@@ -377,14 +433,16 @@ function checkDeadlineNotifications(todo) {
     }
 }
 
-function showNotification(message) {
+function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
-    notification.className = 'notification';
+    notification.className = `notification ${type}`;
     notification.textContent = message;
+    
     document.body.appendChild(notification);
-
+    
     setTimeout(() => {
-        notification.remove();
+        notification.classList.add('fade-out');
+        setTimeout(() => notification.remove(), 300);
     }, 3000);
 }
 
@@ -496,36 +554,44 @@ function setupEditModal() {
     });
 
     // Handle save
-    saveBtn.addEventListener('click', async () => {
-        const newDeadline = document.getElementById('editDate').value;
-        const updates = {
-            text: newText,
-            category: category,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-    
-        if (newDeadline) {
-            const deadlineDate = new Date(newDeadline);
-            updates.deadline = firebase.firestore.Timestamp.fromDate(deadlineDate);
-        } else {
-            updates.deadline = null;
-        }
-
-        try {
-            await db.collection('users').doc(currentUser.uid)
-                .collection('todos')
-                .doc(currentEditId)
-                .update({
-                    text: newText,
-                    deadline: deadlineDate,
-                    category: category,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp() // Tambah field update
-                });
-
-            closeModal();
-        } catch (error) {
-            console.error('Error updating document:', error);
-            alert(`Gagal menyimpan perubahan: ${error.message}`);
-        }
-    });
+  saveBtn.addEventListener('click', async () => {
+      if (!currentEditId) return;
+  
+      const newText = document.getElementById('editText').value.trim();
+      const newDeadline = document.getElementById('editDate').value;
+      const category = document.getElementById('editCategory').value;
+  
+      if (!newText) {
+          alert('Nama tugas tidak boleh kosong!');
+          return;
+      }
+  
+      try {
+          const updateData = {
+              text: newText,
+              category: category,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+  
+          // Handle deadline conversion
+          if (newDeadline) {
+              const deadlineDate = new Date(newDeadline);
+              updateData.deadline = firebase.firestore.Timestamp.fromDate(deadlineDate);
+          } else {
+              updateData.deadline = null;
+          }
+  
+          await db.collection('users').doc(currentUser.uid)
+              .collection('todos')
+              .doc(currentEditId)
+              .update(updateData);
+  
+          modal.classList.remove('visible');
+          modal.classList.add('hidden');
+          currentEditId = null;
+      } catch (error) {
+          console.error('Error updating task:', error);
+          alert(`Gagal menyimpan perubahan: ${error.message}`);
+      }
+  });
 }
