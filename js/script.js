@@ -146,8 +146,9 @@ function initTodoSystem() {
                 id: doc.id,
                 text: doc.data().text,
                 completed: doc.data().completed || false,
-                deadline: doc.data().deadline ? new Date(doc.data().deadline) : null,
-                createdAt: doc.data().createdAt ? new Date(doc.data().createdAt.seconds * 1000) : new Date(),
+                deadline: doc.data().deadline?.toDate() || null,
+                createdAt: doc.data().createdAt?.toDate() || new Date(),
+                category: doc.data().category || 'general'
             }));
             renderTodos();
         },
@@ -180,21 +181,21 @@ async function addTodo() {
     
     const text = textInput.value.trim();
     const deadline = dateInput.value;
+    
+    const todoData = {
+        text: text,
+        completed: false,
+        category: 'general',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
 
-    if (!text) {
-        alert('Silahkan isi nama task!');
-        textInput.focus();
-        return;
-    }
-
-    if (deadline && !validateDate(deadline)) {
-        alert('Deadline tidak boleh di masa lalu!');
-        dateInput.focus();
-        return;
+    if (deadline) {
+        const deadlineDate = new Date(deadline);
+        todoData.deadline = firebase.firestore.Timestamp.fromDate(deadlineDate);
     }
 
     try {
-        await db.collection('users').doc(currentUser.uid).collection('todos').add({
+        await db.collection('users').doc(currentUser.uid).collection('todos').add(todoData);
             text: text,
             deadline: deadline || null,
             completed: false,
@@ -321,6 +322,7 @@ function validateDate(dateString) {
     const selectedDate = new Date(dateString);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
     return selectedDate >= today;
 }
 
@@ -360,10 +362,9 @@ function getSortedTodos() {
 
 function checkDeadlineNotifications(todo) {
     if (!todo.deadline || todo.completed) return;
-
-    const deadline = new Date(todo.deadline);
+    
     const today = new Date();
-    const timeDiff = deadline - today;
+    const timeDiff = todo.deadline - today;
     const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
 
     if (daysLeft === 0) {
@@ -455,9 +456,12 @@ function setupEditModal() {
     // Buka modal dengan mengambil data langsung dari Firestore
     window.openEditModal = async (todoId) => {
         try {
-            console.log("Membuka modal untuk ID:", todoId); // Debugging
             const todoDoc = await db.collection('users').doc(currentUser.uid)
                 .collection('todos').doc(todoId).get();
+                
+            const todo = todoDoc.data();
+            document.getElementById('editText').value = todo.text;
+            document.getElementById('editDate').value = todo.deadline?.toDate().toISOString().split('T')[0] || '';
             
             if (!todoDoc.exists) {
                 alert("Dokumen tidak ditemukan!");
@@ -492,17 +496,18 @@ function setupEditModal() {
 
     // Handle save
     saveBtn.addEventListener('click', async () => {
-        if (!currentEditId) return;
-
-        const newText = document.getElementById('editText').value.trim();
         const newDeadline = document.getElementById('editDate').value;
-        const deadlineDate = newDeadline ? new Date(newDeadline) : null;
-        const category = document.getElementById('editCategory').value;
-
-        if (!newText) {
-            alert('Nama tugas tidak boleh kosong!');
-            document.getElementById('editText').focus();
-            return;
+        const updates = {
+            text: newText,
+            category: category,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+    
+        if (newDeadline) {
+            const deadlineDate = new Date(newDeadline);
+            updates.deadline = firebase.firestore.Timestamp.fromDate(deadlineDate);
+        } else {
+            updates.deadline = null;
         }
 
         try {
