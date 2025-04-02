@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Login Form
-    document.getElementById('login-form')?.addEventListener('submit', async (e) => {
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
@@ -82,7 +82,14 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await auth.signInWithEmailAndPassword(email, password);
         } catch (error) {
-            showNotification(error.message, 'error');
+            console.error("Login Error:", error);
+            const errorMessage = {
+                'auth/user-not-found': 'Akun tidak ditemukan',
+                'auth/wrong-password': 'Password salah',
+                'auth/invalid-email': 'Email tidak valid'
+            }[error.code] || error.message;
+            
+            showNotification(`❌ ${errorMessage}`, 'error');
         }
     });
 
@@ -109,19 +116,26 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('google-login').addEventListener('click', async () => {
         try {
             const provider = new firebase.auth.GoogleAuthProvider();
+            provider.addScope('email'); // Tambahkan scope
+            provider.setCustomParameters({
+                prompt: 'select_account' // Paksa tampil pilihan akun
+            });
+            
             const result = await auth.signInWithPopup(provider);
             
             if (result.additionalUserInfo.isNewUser) {
                 await db.collection('users').doc(result.user.uid).set({
-                    username: result.user.displayName || result.user.email.split('@')[0],
+                    username: result.user.displayName || "Pengguna Baru",
                     email: result.user.email,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
             }
         } catch (error) {
-            showNotification(error.message, 'error');
+            console.error("Google Login Error:", error);
+            showNotification(`❌ Gagal login: ${error.message}`, 'error');
         }
     });
+    
 
     // Logout
     document.getElementById('logout-btn').addEventListener('click', () => {
