@@ -56,9 +56,6 @@ auth.onAuthStateChanged(async (user) => {
     }
 });
 
-/* ==================================================
-                EVENT LISTENERS
-   ================================================== */
 document.addEventListener('DOMContentLoaded', () => {
     // Switch Auth Pages
     document.getElementById('show-register')?.addEventListener('click', (e) => {
@@ -74,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Login Form
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
+    document.getElementById('login-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
@@ -82,14 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await auth.signInWithEmailAndPassword(email, password);
         } catch (error) {
-            console.error("Login Error:", error);
-            const errorMessage = {
-                'auth/user-not-found': 'Akun tidak ditemukan',
-                'auth/wrong-password': 'Password salah',
-                'auth/invalid-email': 'Email tidak valid'
-            }[error.code] || error.message;
-            
-            showNotification(`❌ ${errorMessage}`, 'error');
+            showNotification(error.message, 'error');
         }
     });
 
@@ -107,6 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 email,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
+            showNotification('🎉 Akun berhasil dibuat!', 'success');
         } catch (error) {
             showNotification(error.message, 'error');
         }
@@ -116,26 +107,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('google-login').addEventListener('click', async () => {
         try {
             const provider = new firebase.auth.GoogleAuthProvider();
-            provider.addScope('email'); // Tambahkan scope
-            provider.setCustomParameters({
-                prompt: 'select_account' // Paksa tampil pilihan akun
-            });
-            
             const result = await auth.signInWithPopup(provider);
             
             if (result.additionalUserInfo.isNewUser) {
                 await db.collection('users').doc(result.user.uid).set({
-                    username: result.user.displayName || "Pengguna Baru",
+                    username: result.user.displayName || result.user.email.split('@')[0],
                     email: result.user.email,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
             }
         } catch (error) {
-            console.error("Google Login Error:", error);
-            showNotification(`❌ Gagal login: ${error.message}`, 'error');
+            showNotification(error.message, 'error');
         }
     });
-    
 
     // Logout
     document.getElementById('logout-btn').addEventListener('click', () => {
@@ -149,32 +133,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 SISTEM TODO
    ================================================== */
 function initTodoSystem() {
-    console.log("Inisialisasi sistem todo");
+    console.log("Memulai sistem todo");
     const todosRef = db.collection("users").doc(currentUser.uid).collection("todos");
     
     // Real-time listener dengan error handling
-    todosRef.orderBy("createdAt", "desc").onSnapshot(
+    const unsubscribe = todosRef.orderBy("createdAt", "desc").onSnapshot(
         (snapshot) => {
             console.log("Menerima snapshot dari Firestore");
-            try {
-                todos = snapshot.docs.map(doc => {
-                    const data = doc.data();
-                    return {
-                        id: doc.id,
-                        text: data.text || 'Tanpa judul',
-                        completed: Boolean(data.completed),
-                        deadline: data.deadline?.toDate?.() || null,
-                        category: data.category || 'general',
-                        createdAt: data.createdAt?.toDate?.() || new Date()
-                    };
-                });
-                console.log("Data todo yang diterima:", todos);
-                renderTodos();
-                setupDragAndDrop();
-            } catch (error) {
-                console.error("Error processing snapshot:", error);
-                showNotification('🔥 Gagal memproses data!', 'error');
-            }
+            todos = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    text: data.text || '[Tidak ada judul]',
+                    completed: Boolean(data.completed),
+                    deadline: data.deadline?.toDate?.() || null,
+                    category: data.category || 'general',
+                    createdAt: data.createdAt?.toDate?.() || new Date()
+                };
+            });
+            console.log("Daftar todo terbaru:", todos);
+            renderTodos();
+            setupDragAndDrop();
         },
         (error) => {
             console.error("Error Firestore:", error);
@@ -182,7 +161,7 @@ function initTodoSystem() {
         }
     );
 
-    // Handler Tambah Todo
+    // Add Todo Handler
     const handleAddTodo = async (e) => {
         e.preventDefault();
         const text = document.getElementById('todoInput').value.trim();
@@ -202,9 +181,11 @@ function initTodoSystem() {
             };
 
             if (deadline) {
-                const deadlineDate = new Date(deadline);
-                if (isNaN(deadlineDate)) throw new Error("Format tanggal salah");
-                newTodo.deadline = firebase.firestore.Timestamp.fromDate(deadlineDate);
+                if (!validateDate(deadline)) {
+                    showNotification('⚠️ Deadline tidak valid!', 'error');
+                    return;
+                }
+                newTodo.deadline = firebase.firestore.Timestamp.fromDate(new Date(deadline));
             }
 
             await todosRef.add(newTodo);
@@ -212,7 +193,7 @@ function initTodoSystem() {
             document.getElementById('todoDate').value = '';
             showNotification('✅ Task berhasil ditambahkan!', 'success');
         } catch (error) {
-            console.error("Error adding todo:", error);
+            console.error("Error menambahkan todo:", error);
             showNotification('❌ Gagal menambahkan task!', 'error');
         }
     };
@@ -233,45 +214,35 @@ function renderTodos() {
     const pendingList = document.getElementById("pendingList");
     const completedList = document.getElementById("completedList");
     
+    // Validasi DOM elements
     if (!pendingList || !completedList) {
         console.error("Element DOM tidak ditemukan!");
         return;
     }
 
-    // Clear list dengan aman
-    pendingList.innerHTML = '';
-    completedList.innerHTML = '';
+    // Clear dengan cara yang lebih aman
+    while (pendingList.firstChild) pendingList.removeChild(pendingList.firstChild);
+    while (completedList.firstChild) completedList.removeChild(completedList.firstChild);
 
-    // Filter dan hitung task
-    const pendingTodos = todos.filter(todo => !todo.completed);
-    const completedTodos = todos.filter(todo => todo.completed);
-    console.log(`Pending: ${pendingTodos.length}, Completed: ${completedTodos.length}`);
-
-    // Render pending tasks
-    pendingTodos.forEach(todo => {
+    todos.forEach(todo => {
         try {
             const todoElement = createTodoElement(todo);
-            pendingList.appendChild(todoElement);
+            if (todo.completed) {
+                completedList.appendChild(todoElement);
+            } else {
+                pendingList.appendChild(todoElement);
+            }
         } catch (error) {
             console.error("Gagal membuat element todo:", error);
+            showNotification('❌ Gagal menampilkan task!', 'error');
         }
     });
 
-    // Render completed tasks
-    completedTodos.forEach(todo => {
-        try {
-            const todoElement = createTodoElement(todo);
-            completedList.appendChild(todoElement);
-        } catch (error) {
-            console.error("Gagal membuat element todo:", error);
-        }
-    });
-
-    // Tambahkan placeholder jika kosong
-    if (pendingList.children.length === 0) {
+    // Update placeholder
+    if (!pendingList.children.length) {
         pendingList.innerHTML = '<div class="empty-state">🎉 Tidak ada tugas!</div>';
     }
-    if (completedList.children.length === 0) {
+    if (!completedList.children.length) {
         completedList.innerHTML = '<div class="empty-state">📭 Belum ada yang selesai</div>';
     }
 }
@@ -282,23 +253,13 @@ function createTodoElement(todo) {
     todoElement.dataset.id = todo.id;
     todoElement.draggable = true;
 
-    // Format tanggal deadline
-    let deadlineText = '⏳ Tanpa deadline';
-    if (todo.deadline instanceof Date) {
-        const options = { 
-            weekday: 'short', 
-            day: 'numeric', 
-            month: 'short', 
-            year: 'numeric' 
-        };
-        deadlineText = `📅 ${todo.deadline.toLocaleDateString('id-ID', options)}`;
-        
-        if (todo.deadline < new Date()) {
-            deadlineText += ' (Terlambat)';
-        }
-    }
+    const deadlineDate = todo.deadline?.toLocaleDateString('id-ID', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    });
 
-    // Styling kategori
     const category = categories[todo.category] || categories.general;
     const categoryStyle = `style="background:${category.color}; 
         color: ${category.color === '#fcbad3' ? '#000' : '#fff'}"`;
@@ -307,7 +268,11 @@ function createTodoElement(todo) {
         <div class="todo-content">
             <span class="category-tag" ${categoryStyle}>${category.name}</span>
             <span class="todo-text">${todo.text}</span>
-            <span class="deadline">${deadlineText}</span>
+            ${todo.deadline ? `
+                <span class="deadline ${todo.deadline < new Date() ? 'overdue' : ''}">
+                    📅 ${deadlineDate}
+                </span>
+            ` : '<span class="deadline">⏳ Tanpa deadline</span>'}
         </div>
         <div class="actions">
             <button class="editBtn" title="Edit">✏️</button>
@@ -339,8 +304,9 @@ async function toggleComplete(todoId) {
             completed: !todoDoc.data().completed,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+        showNotification('✅ Status task diperbarui!', 'success');
     } catch (error) {
-        console.error("Error toggling complete:", error);
+        console.error("Error mengubah status:", error);
         showNotification('❌ Gagal mengubah status!', 'error');
     }
 }
@@ -352,7 +318,7 @@ async function deleteTodo(todoId) {
                 .collection('todos').doc(todoId).delete();
             showNotification('🗑️ Task dihapus!', 'success');
         } catch (error) {
-            console.error("Error deleting todo:", error);
+            console.error("Error menghapus todo:", error);
             showNotification('❌ Gagal menghapus task!', 'error');
         }
     }
@@ -388,7 +354,7 @@ function setupEditModal() {
             modal.classList.add('visible');
             modal.classList.remove('hidden');
         } catch (error) {
-            console.error("Error opening modal:", error);
+            console.error("Error membuka modal:", error);
             showNotification('❌ Gagal membuka editor!', 'error');
         }
     };
@@ -413,9 +379,11 @@ function setupEditModal() {
             };
 
             if (newDeadline) {
-                const deadlineDate = new Date(newDeadline);
-                if (isNaN(deadlineDate)) throw new Error("Format tanggal salah");
-                updateData.deadline = firebase.firestore.Timestamp.fromDate(deadlineDate);
+                if (!validateDate(newDeadline)) {
+                    showNotification('⚠️ Deadline tidak valid!', 'error');
+                    return;
+                }
+                updateData.deadline = firebase.firestore.Timestamp.fromDate(new Date(newDeadline));
             } else {
                 updateData.deadline = null;
             }
@@ -429,7 +397,7 @@ function setupEditModal() {
             modal.classList.add('hidden');
             showNotification('✅ Perubahan berhasil disimpan!', 'success');
         } catch (error) {
-            console.error("Error saving edit:", error);
+            console.error("Error menyimpan perubahan:", error);
             showNotification('❌ Gagal menyimpan perubahan!', 'error');
         }
     });
@@ -484,9 +452,10 @@ function setupDragAndDrop() {
                         completed: newStatus,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
+                showNotification('✅ Posisi task diperbarui!', 'success');
             } catch (error) {
-                console.error("Error updating drag & drop:", error);
-                showNotification('❌ Gagal memperbarui status!', 'error');
+                console.error("Error update drag & drop:", error);
+                showNotification('❌ Gagal memperbarui posisi!', 'error');
                 renderTodos();
             }
         });
@@ -533,15 +502,12 @@ function validateDate(dateString) {
                 INITIALIZATION
    ================================================== */
 document.addEventListener('DOMContentLoaded', () => {
-    // Validasi date input
-    const dateInput = document.getElementById('todoDate');
-    if (dateInput) {
-        dateInput.addEventListener('change', function() {
-            if (!validateDate(this.value)) {
-                showNotification('⚠️ Deadline tidak boleh di masa lalu!', 'error');
-                this.value = '';
-            }
-        });
+    document.getElementById('todoDate').addEventListener('change', function() {
+        if (!validateDate(this.value)) {
+            showNotification('⚠️ Deadline tidak boleh di masa lalu!', 'error');
+            this.value = '';
+        }
+    });
     
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
