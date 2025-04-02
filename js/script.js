@@ -129,19 +129,31 @@ document.addEventListener('DOMContentLoaded', () => {
 function initTodoSystem() {
     const todosRef = db.collection("users").doc(currentUser.uid).collection("todos");
     
-    // Real-time listener
-    todosRef.orderBy("createdAt", "desc").onSnapshot(snapshot => {
-        todos = snapshot.docs.map(doc => ({
-            id: doc.id,
-            text: doc.data().text,
-            completed: doc.data().completed || false,
-            deadline: doc.data().deadline?.toDate() || null,
-            category: doc.data().category || 'general',
-            createdAt: doc.data().createdAt?.toDate() || new Date()
-        }));
-        renderTodos();
-        setupDragAndDrop();
-    });
+    // Real-time listener dengan error handling
+    todosRef.orderBy("createdAt", "desc").onSnapshot(
+        (snapshot) => {
+            console.log("Menerima snapshot dari Firestore");
+            todos = snapshot.docs.map(doc => {
+                const data = doc.data();
+                // Debugging konversi tanggal
+                console.log("Data mentah:", data);
+                return {
+                    id: doc.id,
+                    text: data.text,
+                    completed: data.completed || false,
+                    deadline: data.deadline?.toDate?.() || null,
+                    category: data.category || 'general',
+                    createdAt: data.createdAt?.toDate?.() || new Date()
+                };
+            });
+            console.log("Todos setelah mapping:", todos);
+            renderTodos();
+            setupDragAndDrop();
+        },
+        (error) => {
+            console.error("Error Firestore:", error);
+            showNotification('🔥 Gagal memuat tugas!', 'error');
+        }
 
     // Add Todo Handler
     const handleAddTodo = async (e) => {
@@ -186,27 +198,46 @@ function initTodoSystem() {
                 RENDER TODO
    ================================================== */
 function renderTodos() {
+    console.log("Memulai render todos");
     const pendingList = document.getElementById("pendingList");
     const completedList = document.getElementById("completedList");
     
-    pendingList.innerHTML = "";
-    completedList.innerHTML = "";
+    // Validasi DOM elements
+    if (!pendingList || !completedList) {
+        console.error("Element DOM tidak ditemukan!");
+        return;
+    }
+
+    // Clear dengan cara yang lebih aman
+    while (pendingList.firstChild) pendingList.removeChild(pendingList.firstChild);
+    while (completedList.firstChild) completedList.removeChild(completedList.firstChild);
+
+    // Debugging jumlah task
+    console.log(`Total todos: ${todos.length}`);
+    const pendingTodos = todos.filter(todo => !todo.completed);
+    console.log(`Pending todos: ${pendingTodos.length}`);
 
     todos.forEach(todo => {
-        const todoElement = createTodoElement(todo);
-        if (todo.completed) {
-            completedList.appendChild(todoElement);
-        } else {
-            pendingList.appendChild(todoElement);
+        try {
+            const todoElement = createTodoElement(todo);
+            if (todo.completed) {
+                completedList.appendChild(todoElement);
+            } else {
+                pendingList.appendChild(todoElement);
+            }
+        } catch (error) {
+            console.error("Gagal membuat element todo:", error);
         }
     });
 
-    if (!pendingList.children.length) {
-        pendingList.innerHTML = '<div class="empty-state">🎉 Tidak ada tugas!</div>';
-    }
-    if (!completedList.children.length) {
-        completedList.innerHTML = '<div class="empty-state">📭 Belum ada yang selesai</div>';
-    }
+    // Update placeholder
+    pendingList.innerHTML += pendingList.children.length === 0 
+        ? '<div class="empty-state">🎉 Tidak ada tugas!</div>'
+        : '';
+        
+    completedList.innerHTML += completedList.children.length === 0 
+        ? '<div class="empty-state">📭 Belum ada yang selesai</div>'
+        : '';
 }
 
 function createTodoElement(todo) {
