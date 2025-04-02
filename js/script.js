@@ -31,7 +31,7 @@ const authContainer = document.getElementById('auth-container');
 const appContainer = document.getElementById('app-container');
 
 /* ==================================================
-                AUTHENTIKASI
+                AUTHENTIKASI (SWEETALERT2)
    ================================================== */
 auth.onAuthStateChanged(async (user) => {
     currentUser = user;
@@ -47,10 +47,9 @@ auth.onAuthStateChanged(async (user) => {
             
             initTodoSystem();
         } catch (error) {
-            console.error("Error loading user data:", error);
             Swal.fire({
                 icon: 'error',
-                title: 'Gagal memuat data!',
+                title: 'Gagal Memuat Data!',
                 text: 'Terjadi kesalahan saat memuat data pengguna',
                 timer: 2000
             });
@@ -110,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
             Swal.fire({
                 icon: 'success',
                 title: 'Registrasi Berhasil!',
-                text: 'Akun Anda berhasil dibuat',
+                showConfirmButton: false,
                 timer: 1500
             });
         } catch (error) {
@@ -143,6 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 text: error.message,
                 timer: 2000
             });
+        }
     });
 
     // Logout
@@ -168,33 +168,26 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ==================================================
-                SISTEM TODO
+                SISTEM TODO (SWEETALERT2)
    ================================================== */
 function initTodoSystem() {
-    console.log("Memulai sistem todo");
     const todosRef = db.collection("users").doc(currentUser.uid).collection("todos");
     
-    // Real-time listener dengan error handling
-    const unsubscribe = todosRef.orderBy("createdAt", "desc").onSnapshot(
+    // Real-time listener
+    todosRef.orderBy("createdAt", "desc").onSnapshot(
         (snapshot) => {
-            console.log("Menerima snapshot dari Firestore");
-            todos = snapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    text: data.text || '[Tidak ada judul]',
-                    completed: Boolean(data.completed),
-                    deadline: data.deadline?.toDate?.() || null,
-                    category: data.category || 'Study',
-                    createdAt: data.createdAt?.toDate?.() || new Date()
-                };
-            });
-            console.log("Daftar todo terbaru:", todos);
+            todos = snapshot.docs.map(doc => ({
+                id: doc.id,
+                text: doc.data().text || '[Tidak ada judul]',
+                completed: Boolean(doc.data().completed),
+                deadline: doc.data().deadline?.toDate?.() || null,
+                category: doc.data().category || 'study',
+                createdAt: doc.data().createdAt?.toDate?.() || new Date()
+            }));
             renderTodos();
             setupDragAndDrop();
         },
         (error) => {
-            console.error("Error Firestore:", error);
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal Memuat Data!',
@@ -215,7 +208,9 @@ function initTodoSystem() {
                 icon: 'error',
                 title: 'Nama Task Kosong!',
                 text: 'Silahkan isi nama task terlebih dahulu',
-                timer: 2000
+                timer: 2000,
+                toast: true,
+                position: 'top-end'
             });
             return;
         }
@@ -224,7 +219,7 @@ function initTodoSystem() {
             const newTodo = {
                 text,
                 completed: false,
-                category: 'Study',
+                category: 'study',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
@@ -233,7 +228,7 @@ function initTodoSystem() {
                     Swal.fire({
                         icon: 'error',
                         title: 'Deadline Tidak Valid!',
-                        text: 'Deadline tidak boleh di masa lalu',
+                        text: 'Pastikan deadline tidak di masa lalu',
                         timer: 2000
                     });
                     return;
@@ -247,7 +242,9 @@ function initTodoSystem() {
             Swal.fire({
                 icon: 'success',
                 title: 'Task Ditambahkan!',
-                timer: 1000
+                timer: 1000,
+                toast: true,
+                position: 'top-end'
             });
         } catch (error) {
             Swal.fire({
@@ -271,19 +268,11 @@ function initTodoSystem() {
                 RENDER TODO
    ================================================== */
 function renderTodos() {
-    console.log("Memulai render todos");
     const pendingList = document.getElementById("pendingList");
     const completedList = document.getElementById("completedList");
     
-    // Validasi DOM elements
-    if (!pendingList || !completedList) {
-        console.error("Element DOM tidak ditemukan!");
-        return;
-    }
-
-    // Clear dengan cara yang lebih aman
-    while (pendingList.firstChild) pendingList.removeChild(pendingList.firstChild);
-    while (completedList.firstChild) completedList.removeChild(completedList.firstChild);
+    pendingList.innerHTML = '';
+    completedList.innerHTML = '';
 
     todos.forEach(todo => {
         try {
@@ -294,20 +283,17 @@ function renderTodos() {
                 pendingList.appendChild(todoElement);
             }
         } catch (error) {
-            console.error("Gagal membuat element todo:", error);
             Swal.fire({
                 icon: 'error',
-                title: 'Gagal Menampilkan Task!',
-                text: 'Terjadi kesalahan saat menampilkan task',
+                title: 'Error!',
+                text: 'Gagal menampilkan task',
                 timer: 2000,
                 toast: true,
-                position: 'top-end',
-                showConfirmButton: false
+                position: 'top-end'
             });
         }
     });
 
-    // Update placeholder
     if (!pendingList.children.length) {
         pendingList.innerHTML = '<div class="empty-state">🎉 Tidak ada tugas!</div>';
     }
@@ -352,7 +338,6 @@ function createTodoElement(todo) {
         </div>
     `;
 
-    // Event Listeners
     todoElement.querySelector('.editBtn').addEventListener('click', () => openEditModal(todo.id));
     todoElement.querySelector('.completeBtn').addEventListener('click', () => toggleComplete(todo.id));
     todoElement.querySelector('.deleteBtn').addEventListener('click', () => deleteTodo(todo.id));
@@ -361,7 +346,7 @@ function createTodoElement(todo) {
 }
 
 /* ==================================================
-                CRUD OPERATIONS
+                CRUD OPERATIONS (SWEETALERT2)
    ================================================== */
 async function toggleComplete(todoId) {
     try {
@@ -376,7 +361,9 @@ async function toggleComplete(todoId) {
         Swal.fire({
             icon: 'success',
             title: 'Status Diperbarui!',
-            timer: 1000
+            timer: 1000,
+            toast: true,
+            position: 'top-end'
         });
     } catch (error) {
         Swal.fire({
@@ -406,7 +393,9 @@ async function deleteTodo(todoId) {
             Swal.fire({
                 icon: 'success',
                 title: 'Terhapus!',
-                timer: 1000
+                timer: 1000,
+                toast: true,
+                position: 'top-end'
             });
         } catch (error) {
             Swal.fire({
@@ -420,7 +409,7 @@ async function deleteTodo(todoId) {
 }
 
 /* ==================================================
-                EDIT MODAL
+                EDIT MODAL (SWEETALERT2)
    ================================================== */
 function setupEditModal() {
     const modal = document.getElementById('editModal');
@@ -454,7 +443,6 @@ function setupEditModal() {
             modal.classList.add('visible');
             modal.classList.remove('hidden');
         } catch (error) {
-            console.error("Error membuka modal:", error);
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal Membuka Editor!',
@@ -496,15 +484,11 @@ function setupEditModal() {
                         icon: 'error',
                         title: 'Deadline Tidak Valid!',
                         text: 'Pastikan deadline tidak di masa lalu',
-                        timer: 2000,
-                        toast: true,
-                        position: 'top-end'
+                        timer: 2000
                     });
                     return;
                 }
                 updateData.deadline = firebase.firestore.Timestamp.fromDate(new Date(newDeadline));
-            } else {
-                updateData.deadline = null;
             }
 
             await db.collection('users').doc(currentUser.uid)
@@ -522,7 +506,6 @@ function setupEditModal() {
                 position: 'top-end'
             });
         } catch (error) {
-            console.error("Error menyimpan perubahan:", error);
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal Menyimpan!',
@@ -532,23 +515,12 @@ function setupEditModal() {
         }
     });
 
-    closeBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            modal.classList.remove('visible');
-            modal.classList.add('hidden');
-        });
-    });
-
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.classList.remove('visible');
-            modal.classList.add('hidden');
-        }
-    });
+    closeBtns.forEach(btn => btn.addEventListener('click', () => modal.classList.add('hidden')));
+    window.addEventListener('click', (e) => e.target === modal && modal.classList.add('hidden'));
 }
 
 /* ==================================================
-                DRAG & DROP
+                DRAG & DROP (SWEETALERT2)
    ================================================== */
 function setupDragAndDrop() {
     const containers = document.querySelectorAll('.task-column');
@@ -558,28 +530,20 @@ function setupDragAndDrop() {
             e.preventDefault();
             const afterElement = getDragAfterElement(container, e.clientY);
             const draggable = document.querySelector('.dragging');
-            
-            if (draggable) {
-                container.insertBefore(draggable, afterElement || null);
-            }
+            draggable && container.insertBefore(draggable, afterElement || null);
         });
     });
 
     document.querySelectorAll('.todo-item').forEach(item => {
-        item.addEventListener('dragstart', () => {
-            item.classList.add('dragging');
-        });
-
+        item.addEventListener('dragstart', () => item.classList.add('dragging'));
         item.addEventListener('dragend', async () => {
             item.classList.remove('dragging');
-            const newStatus = item.parentElement.id === 'completedList';
-            
             try {
                 await db.collection('users').doc(currentUser.uid)
                     .collection('todos')
                     .doc(item.dataset.id)
                     .update({
-                        completed: newStatus,
+                        completed: item.parentElement.id === 'completedList',
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 Swal.fire({
@@ -590,7 +554,6 @@ function setupDragAndDrop() {
                     position: 'top-end'
                 });
             } catch (error) {
-                console.error("Error update drag & drop:", error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal Memperbarui!',
@@ -604,32 +567,16 @@ function setupDragAndDrop() {
 }
 
 function getDragAfterElement(container, y) {
-    const draggableElements = [...container.querySelectorAll('.todo-item:not(.dragging)')];
-    
-    return draggableElements.reduce((closest, child) => {
+    return [...container.querySelectorAll('.todo-item:not(.dragging)')].reduce((closest, child) => {
         const box = child.getBoundingClientRect();
         const offset = y - box.top - box.height / 2;
-        return offset < 0 && offset > closest.offset 
-            ? { offset: offset, element: child } 
-            : closest;
+        return offset < 0 && offset > closest.offset ? { offset, element: child } : closest;
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
 /* ==================================================
                 UTILITIES
    ================================================== */
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.classList.add('fade-out');
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-
 function validateDate(dateString) {
     if (!dateString) return true;
     const selectedDate = new Date(dateString);
