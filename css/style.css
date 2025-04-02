@@ -640,27 +640,19 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .notification {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
     padding: 1rem 2rem;
     border-radius: 8px;
     color: white;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
     z-index: 1000;
     animation: slideIn 0.3s ease;
 }
 
-.notification.success {
-    background: #4CAF50;
-}
-
-.notification.error {
-    background: #f44336;
-}
-
-.notification.info {
-    background: #2196F3;
-}
+.notification.success { background: #4CAF50; }
+.notification.error { background: #f44336; }
+.notification.info { background: #2196F3; }
 
 .fade-out {
     animation: fadeOut 0.3s ease forwards;
