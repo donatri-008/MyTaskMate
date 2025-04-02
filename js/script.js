@@ -172,6 +172,7 @@ function initTodoSystem() {
             await addTodo();
         }
     });
+  setupEditModal();
 }
 
 // Fungsi addTodo yang diperbaiki
