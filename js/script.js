@@ -21,10 +21,10 @@ const db = firebase.firestore();
 let currentUser = null;
 let todos = [];
 const categories = {
-    general: { name: 'Umum', color: '#a8d8ea' },
-    work: { name: 'Pekerjaan', color: '#aa96da' },
-    personal: { name: 'Pribadi', color: '#fcbad3' },
-    study: { name: 'Belajar', color: '#9ec0e3' }
+    general: { name: 'General', color: '#a8d8ea' },
+    work: { name: 'Work', color: '#aa96da' },
+    personal: { name: 'Personal', color: '#fcbad3' },
+    study: { name: 'Study', color: '#9ec0e3' }
 };
 
 const authContainer = document.getElementById('auth-container');
@@ -147,7 +147,7 @@ function initTodoSystem() {
                     text: data.text || '[Tidak ada judul]',
                     completed: Boolean(data.completed),
                     deadline: data.deadline?.toDate?.() || null,
-                    category: data.category || 'general',
+                    category: data.category || 'Study',
                     createdAt: data.createdAt?.toDate?.() || new Date()
                 };
             });
@@ -176,7 +176,7 @@ function initTodoSystem() {
             const newTodo = {
                 text,
                 completed: false,
-                category: 'general',
+                category: 'Study',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
@@ -260,7 +260,7 @@ function createTodoElement(todo) {
         year: 'numeric'
     });
 
-    const category = categories[todo.category] || categories.general;
+    const category = categories[todo.category] || categories.study;
     const categoryStyle = `style="background:${category.color}; 
         color: ${category.color === '#fcbad3' ? '#000' : '#fff'}"`;
 
@@ -349,7 +349,7 @@ function setupEditModal() {
             
             document.getElementById('editText').value = todoData.text || '';
             document.getElementById('editDate').value = deadlineDate?.toISOString().split('T')[0] || '';
-            document.getElementById('editCategory').value = todoData.category || 'general';
+            document.getElementById('editCategory').value = todoData.category || 'study';
 
             modal.classList.add('visible');
             modal.classList.remove('hidden');
