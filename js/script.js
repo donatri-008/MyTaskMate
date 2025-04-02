@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await auth.signInWithEmailAndPassword(email, password);
         } catch (error) {
-          Swal.fire({
+            Swal.fire({
                 icon: 'error',
                 title: 'Login Gagal!',
                 text: error.message,
@@ -143,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 text: error.message,
                 timer: 2000
             });
-        }
     });
 
     // Logout
@@ -164,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     timer: 1000
                 });
             }
+        });
     });
 });
 
@@ -437,8 +437,8 @@ function setupEditModal() {
             if (!todoDoc.exists) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Nama Task Kosong!',
-                    text: 'Silahkan isi nama task terlebih dahulu',
+                    title: 'Task Tidak Ditemukan!',
+                    text: 'Task yang ingin diedit tidak dapat ditemukan',
                     timer: 2000
                 });
                 return;
@@ -476,7 +476,9 @@ function setupEditModal() {
                 icon: 'error',
                 title: 'Nama Task Kosong!',
                 text: 'Silahkan isi nama task terlebih dahulu',
-                timer: 2000
+                timer: 2000,
+                toast: true,
+                position: 'top-end'
             });
             return;
         }
@@ -494,7 +496,9 @@ function setupEditModal() {
                         icon: 'error',
                         title: 'Deadline Tidak Valid!',
                         text: 'Pastikan deadline tidak di masa lalu',
-                        timer: 2000
+                        timer: 2000,
+                        toast: true,
+                        position: 'top-end'
                     });
                     return;
                 }
@@ -512,10 +516,13 @@ function setupEditModal() {
             modal.classList.add('hidden');
             Swal.fire({
                 icon: 'success',
-                title: 'Perubahan Disimpan!',
-                timer: 1000
+                title: 'Perubahan Tersimpan!',
+                timer: 1000,
+                toast: true,
+                position: 'top-end'
             });
         } catch (error) {
+            console.error("Error menyimpan perubahan:", error);
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal Menyimpan!',
@@ -577,15 +584,17 @@ function setupDragAndDrop() {
                     });
                 Swal.fire({
                     icon: 'success',
-                    title: 'Posisi task diperbarui!',
-                    timer: 1000
+                    title: 'Posisi Diperbarui!',
+                    timer: 1000,
+                    toast: true,
+                    position: 'top-end'
                 });
             } catch (error) {
                 console.error("Error update drag & drop:", error);
                 Swal.fire({
                     icon: 'error',
-                    title: 'Gagal memperbarui posisi!',
-                    text: 'Terjadi kesalahan saat memperbarui posisi',
+                    title: 'Gagal Memperbarui!',
+                    text: 'Terjadi kesalahan saat mengubah posisi task',
                     timer: 2000
                 });
                 renderTodos();
@@ -638,9 +647,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!validateDate(this.value)) {
             Swal.fire({
                 icon: 'error',
-                title: 'Deadline Tidak Valid!',
-                text: 'Deadline tidak boleh di masa lalu',
-                timer: 2000
+                title: 'Deadline Invalid!',
+                text: 'Tidak boleh menggunakan tanggal masa lalu',
+                timer: 2000,
+                toast: true,
+                position: 'top-end'
             });
             this.value = '';
         }
