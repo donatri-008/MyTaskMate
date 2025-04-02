@@ -48,7 +48,12 @@ auth.onAuthStateChanged(async (user) => {
             initTodoSystem();
         } catch (error) {
             console.error("Error loading user data:", error);
-            showNotification('🔥 Gagal memuat data pengguna!', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal memuat data!',
+                text: 'Terjadi kesalahan saat memuat data pengguna',
+                timer: 2000
+            });
         }
     } else {
         authContainer.classList.remove('hidden');
@@ -79,7 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await auth.signInWithEmailAndPassword(email, password);
         } catch (error) {
-            showNotification(error.message, 'error');
+          Swal.fire({
+                icon: 'error',
+                title: 'Login Gagal!',
+                text: error.message,
+                timer: 2000
+            });
         }
     });
 
@@ -97,9 +107,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 email,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
-            showNotification('🎉 Akun berhasil dibuat!', 'success');
+            Swal.fire({
+                icon: 'success',
+                title: 'Registrasi Berhasil!',
+                text: 'Akun Anda berhasil dibuat',
+                timer: 1500
+            });
         } catch (error) {
-            showNotification(error.message, 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Registrasi Gagal!',
+                text: error.message,
+                timer: 2000
+            });
         }
     });
 
@@ -117,15 +137,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         } catch (error) {
-            showNotification(error.message, 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Login Gagal!',
+                text: error.message,
+                timer: 2000
+            });
         }
     });
 
     // Logout
     document.getElementById('logout-btn').addEventListener('click', () => {
-        if (confirm('Yakin ingin logout?')) {
-            auth.signOut();
-        }
+        Swal.fire({
+            title: 'Yakin ingin logout?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Logout!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                auth.signOut();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil Logout!',
+                    timer: 1000
+                });
+            }
     });
 });
 
@@ -157,7 +195,12 @@ function initTodoSystem() {
         },
         (error) => {
             console.error("Error Firestore:", error);
-            showNotification('🔥 Gagal memuat tugas!', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Memuat Data!',
+                text: 'Terjadi kesalahan saat memuat tugas',
+                timer: 2000
+            });
         }
     );
 
@@ -168,7 +211,12 @@ function initTodoSystem() {
         const deadline = document.getElementById('todoDate').value;
 
         if (!text) {
-            showNotification('📝 Silahkan isi nama task!', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Nama Task Kosong!',
+                text: 'Silahkan isi nama task terlebih dahulu',
+                timer: 2000
+            });
             return;
         }
 
@@ -182,7 +230,12 @@ function initTodoSystem() {
 
             if (deadline) {
                 if (!validateDate(deadline)) {
-                    showNotification('⚠️ Deadline tidak valid!', 'error');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Deadline Tidak Valid!',
+                        text: 'Deadline tidak boleh di masa lalu',
+                        timer: 2000
+                    });
                     return;
                 }
                 newTodo.deadline = firebase.firestore.Timestamp.fromDate(new Date(deadline));
@@ -191,10 +244,18 @@ function initTodoSystem() {
             await todosRef.add(newTodo);
             document.getElementById('todoInput').value = '';
             document.getElementById('todoDate').value = '';
-            showNotification('✅ Task berhasil ditambahkan!', 'success');
+            Swal.fire({
+                icon: 'success',
+                title: 'Task Ditambahkan!',
+                timer: 1000
+            });
         } catch (error) {
-            console.error("Error menambahkan todo:", error);
-            showNotification('❌ Gagal menambahkan task!', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Menambahkan!',
+                text: 'Terjadi kesalahan saat menambahkan task',
+                timer: 2000
+            });
         }
     };
 
@@ -234,7 +295,15 @@ function renderTodos() {
             }
         } catch (error) {
             console.error("Gagal membuat element todo:", error);
-            showNotification('❌ Gagal menampilkan task!', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Menampilkan Task!',
+                text: 'Terjadi kesalahan saat menampilkan task',
+                timer: 2000,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false
+            });
         }
     });
 
@@ -304,22 +373,48 @@ async function toggleComplete(todoId) {
             completed: !todoDoc.data().completed,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        showNotification('✅ Status task diperbarui!', 'success');
+        Swal.fire({
+            icon: 'success',
+            title: 'Status Diperbarui!',
+            timer: 1000
+        });
     } catch (error) {
-        console.error("Error mengubah status:", error);
-        showNotification('❌ Gagal mengubah status!', 'error');
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal Memperbarui!',
+            text: 'Terjadi kesalahan saat mengubah status',
+            timer: 2000
+        });
     }
 }
 
 async function deleteTodo(todoId) {
-    if (confirm('Apakah anda yakin ingin menghapus task ini?')) {
+    const result = await Swal.fire({
+        title: 'Hapus Task?',
+        text: "Anda tidak bisa mengembalikan data yang terhapus!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Hapus!'
+    });
+
+    if (result.isConfirmed) {
         try {
             await db.collection('users').doc(currentUser.uid)
                 .collection('todos').doc(todoId).delete();
-            showNotification('🗑️ Task dihapus!', 'success');
+            Swal.fire({
+                icon: 'success',
+                title: 'Terhapus!',
+                timer: 1000
+            });
         } catch (error) {
-            console.error("Error menghapus todo:", error);
-            showNotification('❌ Gagal menghapus task!', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Menghapus!',
+                text: 'Terjadi kesalahan saat menghapus task',
+                timer: 2000
+            });
         }
     }
 }
@@ -340,7 +435,12 @@ function setupEditModal() {
                 .collection('todos').doc(todoId).get();
 
             if (!todoDoc.exists) {
-                showNotification('📄 Task tidak ditemukan!', 'error');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Nama Task Kosong!',
+                    text: 'Silahkan isi nama task terlebih dahulu',
+                    timer: 2000
+                });
                 return;
             }
 
@@ -355,7 +455,12 @@ function setupEditModal() {
             modal.classList.remove('hidden');
         } catch (error) {
             console.error("Error membuka modal:", error);
-            showNotification('❌ Gagal membuka editor!', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Membuka Editor!',
+                text: 'Terjadi kesalahan saat membuka editor task',
+                timer: 2000
+            });
         }
     };
 
@@ -367,7 +472,12 @@ function setupEditModal() {
         const newCategory = document.getElementById('editCategory').value;
 
         if (!newText) {
-            showNotification('📝 Nama task tidak boleh kosong!', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Nama Task Kosong!',
+                text: 'Silahkan isi nama task terlebih dahulu',
+                timer: 2000
+            });
             return;
         }
 
@@ -380,7 +490,12 @@ function setupEditModal() {
 
             if (newDeadline) {
                 if (!validateDate(newDeadline)) {
-                    showNotification('⚠️ Deadline tidak valid!', 'error');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Deadline Tidak Valid!',
+                        text: 'Pastikan deadline tidak di masa lalu',
+                        timer: 2000
+                    });
                     return;
                 }
                 updateData.deadline = firebase.firestore.Timestamp.fromDate(new Date(newDeadline));
@@ -395,10 +510,18 @@ function setupEditModal() {
 
             modal.classList.remove('visible');
             modal.classList.add('hidden');
-            showNotification('✅ Perubahan berhasil disimpan!', 'success');
+            Swal.fire({
+                icon: 'success',
+                title: 'Perubahan Disimpan!',
+                timer: 1000
+            });
         } catch (error) {
-            console.error("Error menyimpan perubahan:", error);
-            showNotification('❌ Gagal menyimpan perubahan!', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Menyimpan!',
+                text: 'Terjadi kesalahan saat menyimpan perubahan',
+                timer: 2000
+            });
         }
     });
 
@@ -452,10 +575,19 @@ function setupDragAndDrop() {
                         completed: newStatus,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                showNotification('✅ Posisi task diperbarui!', 'success');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Posisi task diperbarui!',
+                    timer: 1000
+                });
             } catch (error) {
                 console.error("Error update drag & drop:", error);
-                showNotification('❌ Gagal memperbarui posisi!', 'error');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal memperbarui posisi!',
+                    text: 'Terjadi kesalahan saat memperbarui posisi',
+                    timer: 2000
+                });
                 renderTodos();
             }
         });
@@ -504,7 +636,12 @@ function validateDate(dateString) {
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('todoDate').addEventListener('change', function() {
         if (!validateDate(this.value)) {
-            showNotification('⚠️ Deadline tidak boleh di masa lalu!', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Deadline Tidak Valid!',
+                text: 'Deadline tidak boleh di masa lalu',
+                timer: 2000
+            });
             this.value = '';
         }
     });
