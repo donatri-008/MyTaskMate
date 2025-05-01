@@ -747,6 +747,7 @@ Swal.fire({
     .deleteBtn {
         width: 30%;
         margin-right: 5rem;
+        align-items: center;
     }
 
     #user-info {
