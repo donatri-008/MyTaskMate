@@ -355,6 +355,35 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     width: 200px;
 }
 
+.todo-list {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.todo-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.todo-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 8px;
+}
+
+.todo-list::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 8px;
+}
+
+.todo-list::-webkit-scrollbar-thumb:hover {
+    background: #bbb;
+}
+
 .task-sections {
     display: grid;
     grid-template-columns: 1fr 1fr;
