@@ -220,6 +220,8 @@ h1 {
     align-items: center;
     gap: 1.5rem;
     margin-left: auto;
+    justify-content: center;
+    width: 100%;
 }
 
 #logout-btn {
@@ -398,7 +400,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .task-column {
-    background: rgba(255, 255, 255, 0.9);
+    background: white;
     padding: 1.5rem;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
@@ -671,28 +673,21 @@ Swal.fire({
     width: '400px'
 });
 
-/* Media Query untuk layar kecil */
+/* Responsive Styles */
 @media (max-width: 768px) {
-    /* Reset Scroll Horizontal */
-    html {
-        overflow-x: hidden;
-    }
-
-    /* Body dan Container Utama */
+    /* Hapus latar belakang gradient */
     body {
-        background: white; /* Ganti gradient dengan warna solid */
-        padding: 1rem;
+        background: white;
     }
 
+    /* Atur lebar container utama */
     #app-container {
         max-width: 100%;
-        width: 100%;
         padding: 1.5rem;
         margin: 1rem auto;
-        border-radius: 12px;
     }
 
-    /* Header */
+    /* Pusatkan judul header */
     .header-wrapper {
         flex-direction: column;
         align-items: center;
@@ -706,14 +701,7 @@ Swal.fire({
         margin-bottom: 1rem;
     }
 
-    #user-info {
-        margin-left: 0;
-        width: 100%;
-        justify-content: center;
-        gap: 1rem;
-    }
-
-    /* Input Tugas */
+    /* Atur input dan tombol di mobile */
     .input-section {
         flex-direction: column;
         gap: 1rem;
@@ -729,6 +717,23 @@ Swal.fire({
         margin-top: 0.5rem;
     }
 
+    /* Tampilkan daftar tugas dalam satu kolom */
+    .task-sections {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    /* Sesuaikan padding daftar tugas */
+    .task-column {
+        padding: 1rem;
+    }
+
+    /* Modal responsive */
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+    }
+
     /* Utility Bar */
     .utility-bar {
         flex-direction: column;
@@ -739,86 +744,25 @@ Swal.fire({
         width: 100%;
     }
 
-    /* Task Sections */
-    .task-sections {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-
-    .task-column {
-        padding: 1rem;
-        background: white; 
-    }
-
-    /* Modal */
-    .modal-content {
-        width: 95%;
-        max-width: 95%;
-    }
-
     /* Tombol Aksi */
+    .actions {
+        display: flex;
+        flex-wrap: wrap; /* Agar tombol tidak tumpang tindih */
+        gap: 0.5rem;
+    }
+
     .completeBtn,
     .editBtn,
     .deleteBtn {
+        width: 30%; /* Lebih kecil di mobile */
+    }
+
+    /* Header "Hi, User" */
+    #user-info {
+        justify-content: center;
         width: 100%;
-        text-align: center;
+        margin-top: 1rem;
     }
-
-    /* Auth Page */
-    #auth-container {
-        width: 95%;
-        padding: 1.5rem;
-        margin: 1rem auto;
-    }
-
-    .btn-google img {
-        width: 18px;
-        height: 18px;
-    }
-
-    /* Typography */
-    .auth-header h1 {
-        font-size: 1.25rem;
-    }
-
-    .auth-header p {
-        font-size: 0.85rem;
-    }
-
-    .auth-switch {
-        font-size: 0.9rem;
-    }
-
-    .input-group input {
-        font-size: 1rem;
-    }
-
-    .btn-primary {
-        font-size: 1rem;
-    }
-
-    .input-group input,
-    .btn-primary,
-    #todoInput,
-    #todoDate,
-    #addBtn,
-    #sortSelect,
-    .modal-input,
-    .modal-btn,
-    .completeBtn,
-    .editBtn,
-    .deleteBtn {
-        width: 100%;
-    }
-
-    #addBtn {
-        margin-top: 0.5rem;
-    }
-
-    .todo-list {
-        max-height: 60vh; /* Batasi tinggi daftar tugas */
-        overflow-y: auto; /* Aktifkan scroll */
-    } 
 }
 
 @media screen and (max-width: 480px) {
