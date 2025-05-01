@@ -670,13 +670,14 @@ Swal.fire({
 
     /* Body dan Container Utama */
     body {
+        background: white; /* Hapus gradient */
         padding: 1rem;
     }
 
     #app-container {
         max-width: 100%;
         padding: 1.5rem;
-        margin: 1rem 0;
+        margin: 1rem auto;
         border-radius: 12px;
     }
 
@@ -684,19 +685,17 @@ Swal.fire({
     .header-wrapper {
         flex-direction: column;
         align-items: center;
-        gap: 0.5rem;
+        gap: 1rem;
     }
 
     h1 {
         position: static;
-        transform: none;
         text-align: center;
         font-size: 1.5rem;
         margin-bottom: 1rem;
     }
 
     #user-info {
-        margin-left: 0;
         width: 100%;
         justify-content: center;
     }
@@ -704,7 +703,7 @@ Swal.fire({
     /* Input Tugas */
     .input-section {
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 1rem;
     }
 
     #todoInput,
@@ -714,18 +713,7 @@ Swal.fire({
     }
 
     #addBtn {
-        margin-top: 0.5rem;
-    }
-
-    /* Utility Bar */
-    .utility-bar {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
-    }
-
-    #sortSelect {
-        width: 100%;
+        margin-top: 1rem;
     }
 
     /* Task Sections */
@@ -738,20 +726,19 @@ Swal.fire({
         padding: 1rem;
     }
 
-    /* Modal (Edit Task) */
+    /* Modal */
     .modal-content {
         width: 95%;
         max-width: 95%;
     }
 
-    /* Form Modal */
-    .form-group input,
-    .form-group select,
-    .modal-input {
-        width: 100%;
+    /* Utility Bar */
+    .utility-bar {
+        flex-direction: column;
+        gap: 1rem;
     }
 
-    .modal-btn {
+    #sortSelect {
         width: 100%;
     }
 
@@ -761,38 +748,5 @@ Swal.fire({
     .deleteBtn {
         width: 100%;
         text-align: center;
-    }
-
-    /* Auth Page */
-    #auth-container {
-        width: 95%;
-        padding: 1.5rem;
-        margin: 1rem auto;
-    }
-
-    .btn-google img {
-        width: 18px;
-        height: 18px;
-    }
-
-    /* Typography */
-    .auth-header h1 {
-        font-size: 1.25rem;
-    }
-
-    .auth-header p {
-        font-size: 0.85rem;
-    }
-
-    .auth-switch {
-        font-size: 0.9rem;
-    }
-
-    .input-group input {
-        font-size: 1rem;
-    }
-
-    .btn-primary {
-        font-size: 1rem;
     }
 }
