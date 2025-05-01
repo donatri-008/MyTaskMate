@@ -661,7 +661,7 @@ Swal.fire({
     width: '400px'
 });
 
-/* Pastikan container utama responsif */
+/* Media Query untuk layar kecil */
 @media screen and (max-width: 768px) {
     body {
         padding: 0.5rem;
@@ -680,7 +680,7 @@ Swal.fire({
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
-        padding: 0.5rem;
+        padding: 0.5rem 1rem;
     }
 
     h1 {
@@ -700,6 +700,7 @@ Swal.fire({
         padding: 0.4rem 0.8rem;
         font-size: 0.85rem;
         border-radius: 5px;
+        display: block; /* Pastikan tombol logout terlihat */
     }
 
     /* Input Section */
@@ -723,22 +724,31 @@ Swal.fire({
         font-size: 0.9rem;
         min-width: 50px;
         border-radius: 5px;
+        display: block; /* Pastikan tombol tambah terlihat */
     }
 
-    /* Todo List */
-    .todo-list {
-        padding: 0.5rem;
-        max-height: 60vh;
-        border-radius: 5px;
+    /* Task Sections */
+    .task-sections {
+        display: flex;
+        flex-direction: column; /* Ubah ke flex column agar kedua section terlihat */
+        gap: 1rem;
     }
 
     .task-column {
-        padding: 0.5rem;
+        padding: 0.8rem;
+        border-radius: 8px;
     }
 
     .task-column h2 {
         font-size: 1rem;
         margin-bottom: 0.5rem;
+    }
+
+    /* Todo List */
+    .todo-list {
+        padding: 0.5rem;
+        max-height: none; /* Hapus batasan tinggi agar semua tugas terlihat */
+        border-radius: 5px;
     }
 
     .todo-item {
@@ -791,7 +801,7 @@ Swal.fire({
 
 @media screen and (max-width: 480px) {
     .header-wrapper {
-        padding: 0.3rem;
+        padding: 0.3rem 0.5rem;
     }
 
     h1 {
@@ -818,6 +828,10 @@ Swal.fire({
         min-width: 40px;
     }
 
+    .task-column {
+        padding: 0.6rem;
+    }
+
     .todo-item {
         padding: 0.6rem;
     }
@@ -835,6 +849,7 @@ Swal.fire({
         height: 30px;
     }
 }
+
 /* SweetAlert2 Responsive */
 @media screen and (max-width: 480px) {
     .swal2-container {
