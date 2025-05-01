@@ -725,7 +725,7 @@ Swal.fire({
     }
 
     .task-sections {
-        grid-template-columns: 1fr;
+        grid-template-columns: 2fr;
         gap: 1rem;
     }
 
