@@ -747,6 +747,7 @@ Swal.fire({
 
     .task-column {
         padding: 1rem;
+        background: white; 
     }
 
     /* Modal */
@@ -817,16 +818,7 @@ Swal.fire({
     .todo-list {
         max-height: 60vh; /* Batasi tinggi daftar tugas */
         overflow-y: auto; /* Aktifkan scroll */
-    }
-    
-    .task-column {
-        background: white; /* Hilangkan transparansi */
-    }
-    
-    #user-info {
-        justify-content: center;
-        width: 100%;
-    }
+    } 
 }
 
 @media screen and (max-width: 480px) {
