@@ -661,68 +661,93 @@ Swal.fire({
     width: '400px'
 });
 
+/* Responsive Styles */
 @media (max-width: 768px) {
     body {
         padding: 1rem;
     }
 
-    #auth-container {
-        padding: 2rem;
+    #auth-container,
+    #app-container {
+        padding: 1.5rem;
+        margin: 1rem auto;
+    }
+
+    .auth-header h1 {
+        font-size: 1.5rem;
     }
 
     .input-section {
         flex-direction: column;
-        gap: 0.5rem;
+    }
+
+    #todoInput,
+    .date-input,
+    #addBtn,
+    #sortSelect {
+        width: 100%;
+    }
+
+    .utility-bar {
+        flex-direction: column;
+        gap: 1rem;
     }
 
     .task-sections {
         grid-template-columns: 1fr;
     }
 
-    .header-wrapper {
+    .todo-item {
         flex-direction: column;
-        gap: 1rem;
+        align-items: flex-start;
     }
 
-    h1 {
-        position: static;
+    .actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    header h1 {
+        font-size: 1.5rem;
         transform: none;
-        text-align: center;
+        left: 0;
     }
 
     #user-info {
-        margin-left: 0;
-        justify-content: center;
-    }
-
-    #sortSelect {
-        width: 100%;
+        flex-direction: column;
+        align-items: flex-end;
     }
 }
 
 @media (max-width: 480px) {
-    #auth-container {
-        padding: 1.5rem;
+    .auth-header h1 {
+        font-size: 1.2rem;
     }
 
     .btn-primary,
     .btn-google,
     #addBtn,
-    #logout-btn,
-    #sortSelect {
+    .modal-btn {
         font-size: 0.9rem;
-        padding: 0.7rem;
+        padding: 0.8rem;
     }
 
-    .input-group input,
-    #todoInput,
-    input[type="date"] {
-        font-size: 0.9rem;
-        padding: 0.7rem 1rem 0.7rem 2.5rem;
+    .todo-item {
+        padding: 0.8rem;
     }
 
-    .actions {
-        flex-direction: column;
-        gap: 0.5rem;
+    .task-column h2 {
+        font-size: 1rem;
+    }
+
+    .category-tag {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.6rem;
+    }
+
+    .close-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 1.2rem;
     }
 }
