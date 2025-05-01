@@ -663,65 +663,47 @@ Swal.fire({
 
 /* Responsive Styles */
 @media (max-width: 768px) {
-    body {
-        padding: 1rem;
-    }
+  .header-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
 
-    #auth-container {
-        width: 100%;
-        padding: 2rem 1.5rem;
-    }
+  .header-wrapper .logo {
+    margin-bottom: 0.5rem;
+  }
 
-    .input-section {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.5rem;
-    }
+  .header-wrapper .user-info {
+    margin-bottom: 0.5rem;
+  }
 
-    .input-section input,
-    .input-section button {
-        width: 100%;
-    }
+  .header-wrapper .logout-btn {
+    align-self: center;
+    width: 100%;
+    margin-bottom: 1rem;
+  }
 
-    .task-sections {
-        grid-template-columns: 1fr;
-    }
+  .input-section {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
 
-    header h1 {
-        font-size: 1.5rem;
-    }
+  .input-section input,
+  .input-section button {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
 
-    .header-wrapper {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+  .task-column {
+    width: 100%;
+  }
 
-    #user-info {
-        margin-top: 0.5rem;
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    #sortSelect {
-        width: 100%;
-    }
-
-    .task-column {
-        padding: 1rem;
-        width: 100%;
-    }
-
-    .todo-item {
-        flex-direction: column;
-        align-items: flex-start;
-        word-break: break-word;
-    }
-
-    .actions {
-        margin-top: 0.5rem;
-        width: 100%;
-        justify-content: flex-end;
-    }
+  .todo-item {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
 }
 
 @media (max-width: 480px) {
