@@ -744,7 +744,8 @@ Swal.fire({
     .completeBtn,
     .editBtn,
     .deleteBtn {
-        width: 30%; /* Lebih kecil di mobile */
+        width: 30%;
+        margin-left: 0.5rem;
     }
 
     /* Header "Hi, User" */
