@@ -206,6 +206,7 @@ header h1 {
     margin: 0;
     font-size: 2rem;
     color: #1e293b;
+    position: relative;
     left: 50%;
     transform: translateX(-50%);
 }
