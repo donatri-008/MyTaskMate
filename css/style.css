@@ -478,9 +478,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .category-personal { background: #fcbad3; }
 .category-study { background: #9ec0e3; }
 
-.actions {
-    display: flex;
-    gap: 0.5rem;
+.actions button {
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    font-size: 1rem;
 }
 
 .deleteBtn, .completeBtn, .editBtn {
@@ -745,7 +746,7 @@ Swal.fire({
     .editBtn,
     .deleteBtn {
         width: 30%;
-        margin-right: 0.5rem;
+        margin-right: 5rem;
     }
 
     #user-info {
