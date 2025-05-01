@@ -745,14 +745,14 @@ Swal.fire({
     .editBtn,
     .deleteBtn {
         width: 30%;
-        margin-left: 1rem;
+        margin-right: 0.5rem;
     }
 
-    /* Header "Hi, User" */
     #user-info {
         justify-content: center;
         width: 100%;
         margin-top: 1rem;
+        margin-left: 2rem;
     }
 }
 
