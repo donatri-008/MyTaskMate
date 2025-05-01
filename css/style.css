@@ -668,12 +668,19 @@ Swal.fire({
     }
 
     #auth-container {
+        width: 100%;
         padding: 2rem 1.5rem;
     }
 
     .input-section {
         flex-direction: column;
+        align-items: stretch;
         gap: 0.5rem;
+    }
+
+    .input-section input,
+    .input-section button {
+        width: 100%;
     }
 
     .task-sections {
@@ -690,7 +697,7 @@ Swal.fire({
     }
 
     #user-info {
-        margin-top: 1rem;
+        margin-top: 0.5rem;
         width: 100%;
         justify-content: space-between;
     }
@@ -701,11 +708,13 @@ Swal.fire({
 
     .task-column {
         padding: 1rem;
+        width: 100%;
     }
 
     .todo-item {
         flex-direction: column;
         align-items: flex-start;
+        word-break: break-word;
     }
 
     .actions {
