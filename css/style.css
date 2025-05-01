@@ -661,62 +661,99 @@ Swal.fire({
     width: '400px'
 });
 
-/* Media Query untuk layar kecil */
+/* Pastikan container utama responsif */
 @media screen and (max-width: 768px) {
-    /* Header lebih rapi */
+    body {
+        padding: 0.5rem;
+    }
+
+    #app-container {
+        margin: 0.5rem;
+        padding: 1rem;
+        border-radius: 10px;
+        max-width: 100%;
+    }
+
+    /* Header */
     .header-wrapper {
-        flex-direction: row; /* Ubah ke row untuk header */
-        justify-content: space-between; /* Pastikan logo dan logout berjajar */
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
         align-items: center;
-        padding: 0.5rem 1rem;
+        padding: 0.5rem;
     }
 
     h1 {
-        font-size: 1.2rem; /* Kurangi ukuran font */
-        position: static; /* Hapus positioning absolute */
+        font-size: 1.2rem;
+        position: static;
         transform: none;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    #user-info {
+        margin-left: 0;
     }
 
     #logout-btn {
         padding: 0.4rem 0.8rem;
-        font-size: 0.85rem; /* Pastikan tombol logout terlihat */
+        font-size: 0.85rem;
+        border-radius: 5px;
     }
 
     /* Input Section */
     .input-section {
-        flex-direction: column;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
         gap: 0.5rem;
-        padding: 0.5rem;
+        margin-bottom: 1rem;
     }
 
     #todoInput {
-        width: 100%;
+        flex: 1;
         padding: 0.7rem;
         font-size: 0.9rem;
+        border-radius: 5px;
     }
 
     #addBtn {
-        width: 100%; /* Tombol penuh lebar */
         padding: 0.7rem;
         font-size: 0.9rem;
+        min-width: 50px;
+        border-radius: 5px;
     }
 
     /* Todo List */
     .todo-list {
         padding: 0.5rem;
-        max-height: 55vh; /* Beri ruang lebih */
+        max-height: 60vh;
+        border-radius: 5px;
+    }
+
+    .task-column {
+        padding: 0.5rem;
+    }
+
+    .task-column h2 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
     }
 
     .todo-item {
+        display: flex;
         flex-direction: column;
         align-items: flex-start;
         padding: 0.8rem;
-        gap: 0.5rem;
+        margin: 0.3rem 0;
+        border-radius: 5px;
+        gap: 0.3rem;
     }
 
     .todo-item span:first-child {
         font-size: 0.9rem;
-        word-wrap: break-word; /* Pastikan teks panjang membungkus */
+        word-wrap: break-word;
         max-width: 100%;
     }
 
@@ -727,35 +764,34 @@ Swal.fire({
     .category-tag {
         font-size: 0.75rem;
         padding: 0.2rem 0.6rem;
+        border-radius: 10px;
     }
 
     .actions {
-        width: 100%;
+        display: flex;
         justify-content: flex-end;
+        width: 100%;
         gap: 0.3rem;
     }
 
     .deleteBtn, .completeBtn, .editBtn {
-        padding: 0.4rem;
-        font-size: 0.8rem;
-        min-width: 40px; /* Pastikan tombol cukup besar untuk disentuh */
-        height: 40px;
+        padding: 0;
+        width: 35px;
+        height: 35px;
         display: flex;
         align-items: center;
         justify-content: center;
+        border-radius: 5px;
     }
 
-    /* Container utama */
-    #app-container {
-        padding: 1rem;
-        margin: 0.5rem;
-        border-radius: 10px;
+    .deleteBtn i, .completeBtn i, .editBtn i {
+        font-size: 1rem;
     }
 }
 
 @media screen and (max-width: 480px) {
     .header-wrapper {
-        padding: 0.3rem 0.5rem;
+        padding: 0.3rem;
     }
 
     h1 {
@@ -763,8 +799,23 @@ Swal.fire({
     }
 
     #logout-btn {
-        font-size: 0.8rem;
         padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .input-section {
+        gap: 0.3rem;
+    }
+
+    #todoInput {
+        padding: 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    #addBtn {
+        padding: 0.6rem;
+        font-size: 0.85rem;
+        min-width: 40px;
     }
 
     .todo-item {
@@ -780,11 +831,10 @@ Swal.fire({
     }
 
     .deleteBtn, .completeBtn, .editBtn {
-        min-width: 35px;
-        height: 35px;
+        width: 30px;
+        height: 30px;
     }
 }
-
 /* SweetAlert2 Responsive */
 @media screen and (max-width: 480px) {
     .swal2-container {
