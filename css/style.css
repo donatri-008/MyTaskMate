@@ -668,7 +668,7 @@ Swal.fire({
     }
 
     #auth-container {
-        padding: 2rem;
+        padding: 2rem 1.5rem;
     }
 
     .input-section {
@@ -680,50 +680,57 @@ Swal.fire({
         grid-template-columns: 1fr;
     }
 
-    .header-wrapper {
-        flex-direction: column;
-        gap: 1rem;
+    header h1 {
+        font-size: 1.5rem;
     }
 
-    h1 {
-        position: static;
-        transform: none;
-        text-align: center;
+    .header-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
     }
 
     #user-info {
-        margin-left: 0;
-        justify-content: center;
+        margin-top: 1rem;
+        width: 100%;
+        justify-content: space-between;
     }
 
     #sortSelect {
         width: 100%;
     }
+
+    .task-column {
+        padding: 1rem;
+    }
+
+    .todo-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .actions {
+        margin-top: 0.5rem;
+        width: 100%;
+        justify-content: flex-end;
+    }
 }
 
 @media (max-width: 480px) {
-    #auth-container {
-        padding: 1.5rem;
+    header h1 {
+        font-size: 1.3rem;
     }
 
     .btn-primary,
     .btn-google,
-    #addBtn,
-    #logout-btn,
-    #sortSelect {
+    .modal-btn {
         font-size: 0.9rem;
-        padding: 0.7rem;
+        padding: 0.8rem;
     }
 
     .input-group input,
     #todoInput,
-    input[type="date"] {
+    #todoDate,
+    #sortSelect {
         font-size: 0.9rem;
-        padding: 0.7rem 1rem 0.7rem 2.5rem;
-    }
-
-    .actions {
-        flex-direction: column;
-        gap: 0.5rem;
     }
 }
