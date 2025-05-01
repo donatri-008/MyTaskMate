@@ -660,56 +660,115 @@ Swal.fire({
     width: '400px'
 });
 
+/* Responsive Styles */
 @media (max-width: 768px) {
-    .task-sections {
-        grid-template-columns: 1fr;
+    body {
+        padding: 1rem;
     }
-    
-    .input-section {
-        flex-direction: column;
-    }
-    
+
+    /* Auth Page */
     #auth-container {
+        width: 100%;
+        margin: 0 0 2rem 0;
         padding: 1.5rem;
-        margin: 1rem;
     }
-    
-    .modal-content {
-        width: 95%;
+
+    .auth-header h1 {
+        font-size: 1.5rem;
     }
-    
+
+    .input-group input,
+    .btn-primary,
+    .btn-google {
+        width: 100%;
+    }
+
+    .btn-google img {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Main App */
     .header-wrapper {
         flex-direction: column;
+        align-items: center;
         gap: 1rem;
     }
-    
-    #user-info {
-        margin-left: 0;
-    }
-    
+
     h1 {
         position: static;
         transform: none;
         text-align: center;
-        margin-bottom: 1rem;
+        font-size: 1.5rem;
     }
-}
 
-@media (max-width: 768px) {
-    .task-sections {
-        grid-template-columns: 1fr;
+    #user-info {
+        margin-left: 0;
+        justify-content: center;
+        width: 100%;
     }
-    
+
+    /* Input Section */
     .input-section {
         flex-direction: column;
     }
-    
+
+    #todoInput,
+    .date-wrapper input[type="date"],
+    #addBtn {
+        width: 100%;
+    }
+
+    #addBtn {
+        margin-top: 1rem;
+    }
+
+    /* Utility Bar */
     .utility-bar {
         flex-direction: column;
         gap: 1rem;
+        align-items: flex-start;
     }
-    
+
     #sortSelect {
         width: 100%;
+    }
+
+    /* Task Sections */
+    .task-sections {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .task-column {
+        padding: 1rem;
+    }
+
+    /* Modal */
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+    }
+
+    /* Form Elements */
+    .form-group input,
+    .form-group select {
+        width: 100%;
+    }
+
+    .modal-input {
+        width: 100%;
+    }
+
+    .modal-btn {
+        width: 100%;
+    }
+
+    /* Buttons */
+    .completeBtn,
+    .editBtn,
+    .deleteBtn {
+        width: 100%;
+        text-align: center;
     }
 }
