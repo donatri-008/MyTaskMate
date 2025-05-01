@@ -701,7 +701,7 @@ Swal.fire({
         margin-bottom: 1rem;
     }
 
-    /* Atur input dan tombol di mobile */
+    /* Atur input section ke kolom */
     .input-section {
         flex-direction: column;
         gap: 1rem;
@@ -732,16 +732,6 @@ Swal.fire({
     .modal-content {
         width: 95%;
         max-width: 95%;
-    }
-
-    /* Utility Bar */
-    .utility-bar {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    #sortSelect {
-        width: 100%;
     }
 
     /* Tombol Aksi */
